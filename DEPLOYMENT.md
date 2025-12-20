@@ -22,7 +22,7 @@ JuiceHub Production Stack:
 | `BOOTSTRAP_CITRINEOS_DATABASE_HOST` | Supabase host | `db.xxxxx.supabase.co` |
 | `BOOTSTRAP_CITRINEOS_DATABASE_PORT` | Port | `5432` |
 | `BOOTSTRAP_CITRINEOS_DATABASE_NAME` | Database name | `postgres` |
-| `BOOTSTRAP_CITRINEOS_DATABASE_USER` | Username | `postgres` |
+| `BOOTSTRAP_CITRINEOS_DATABASE_USERNAME` | Username | `postgres` |
 | `BOOTSTRAP_CITRINEOS_DATABASE_PASSWORD` | Password | `your-password` |
 | `DATABASE_URL` | Full connection string | `postgres://...` |
 

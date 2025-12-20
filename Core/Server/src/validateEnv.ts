@@ -33,7 +33,7 @@ const ENV_VARS: EnvVar[] = [
     description: 'PostgreSQL database name',
   },
   {
-    name: 'BOOTSTRAP_CITRINEOS_DATABASE_USER',
+    name: 'BOOTSTRAP_CITRINEOS_DATABASE_USERNAME',
     required: true,
     description: 'PostgreSQL database username',
   },

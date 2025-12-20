@@ -41,7 +41,7 @@ services:
         value: 5432
       - key: BOOTSTRAP_CITRINEOS_DATABASE_NAME
         value: postgres
-      - key: BOOTSTRAP_CITRINEOS_DATABASE_USER
+      - key: BOOTSTRAP_CITRINEOS_DATABASE_USERNAME
         value: postgres
       - key: BOOTSTRAP_CITRINEOS_DATABASE_PASSWORD
         sync: false  # Your Supabase password
