@@ -109,10 +109,8 @@ services:
         value: anonymous
 
   # OperatorUI Frontend (Static Site)
-  - type: web
+  - type: static
     name: juicehub-ui
-    env: static
-    plan: free  # Static sites are always free
     repo: https://github.com/player20/JuiceHub
     branch: main
     rootDir: OperatorUI
