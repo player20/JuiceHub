@@ -20,6 +20,7 @@ services:
     rootDir: Core
     dockerfilePath: Server/deploy.Dockerfile
     dockerContext: .
+    dockerCommand: /usr/local/apps/citrineos/entrypoint.sh
     healthCheckPath: /health
     envVars:
       # Application
