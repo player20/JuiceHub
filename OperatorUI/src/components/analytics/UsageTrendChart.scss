@@ -1,0 +1,58 @@
+// SPDX-FileCopyrightText: 2025 Contributors to the CitrineOS Project
+//
+// SPDX-License-Identifier: Apache-2.0
+
+.usage-trend-chart {
+  width: 100%;
+
+  .chart-summary {
+    padding-top: 16px;
+    border-top: 1px solid #f0f0f0;
+  }
+
+  // Customize Recharts tooltip
+  .recharts-tooltip-wrapper {
+    z-index: 10;
+  }
+
+  // Customize legend
+  .recharts-legend-wrapper {
+    padding-top: 16px !important;
+  }
+
+  // Responsive adjustments
+  @media (max-width: 768px) {
+    .chart-summary {
+      flex-direction: column;
+      gap: 12px;
+
+      > div {
+        width: 100%;
+        align-items: flex-start;
+      }
+    }
+  }
+}
+
+// Dark mode support
+[data-theme='dark'] {
+  .usage-trend-chart {
+    .chart-summary {
+      border-top-color: #303030;
+    }
+
+    .recharts-cartesian-grid-horizontal line,
+    .recharts-cartesian-grid-vertical line {
+      stroke: #303030;
+    }
+
+    .recharts-xaxis line,
+    .recharts-yaxis line {
+      stroke: #434343;
+    }
+
+    .recharts-text {
+      fill: rgba(255, 255, 255, 0.85);
+    }
+  }
+}

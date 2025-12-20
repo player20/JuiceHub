@@ -1,0 +1,20 @@
+// SPDX-FileCopyrightText: 2025 Contributors to the CitrineOS Project
+//
+// SPDX-License-Identifier: Apache-2.0
+
+.alerts-dashboard {
+  padding: 24px;
+
+  .ant-timeline {
+    max-height: 600px;
+    overflow-y: auto;
+  }
+
+  @media (max-width: 768px) {
+    padding: 16px;
+
+    .ant-table {
+      font-size: 12px;
+    }
+  }
+}

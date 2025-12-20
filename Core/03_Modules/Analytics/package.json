@@ -1,0 +1,32 @@
+{
+  "name": "@citrineos/analytics",
+  "version": "1.0.0",
+  "description": "Analytics and Reporting Module for JuiceHub - Usage metrics, health scores, and performance reports",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "test": "jest",
+    "clean": "rm -rf dist tsconfig.tsbuildinfo"
+  },
+  "keywords": [
+    "analytics",
+    "reporting",
+    "metrics",
+    "health-score",
+    "ocpp"
+  ],
+  "author": "JuiceHub Team",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@citrineos/base": "file:../../00_Base",
+    "@citrineos/data": "file:../../01_Data",
+    "@citrineos/util": "file:../../02_Util",
+    "date-fns": "^2.30.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}

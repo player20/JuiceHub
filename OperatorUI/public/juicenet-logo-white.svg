@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200">
+  <!-- Icon Circle -->
+  <circle cx="100" cy="100" r="75" fill="none" stroke="#1EC0A0" stroke-width="4"/>
+
+  <!-- Green Leaf -->
+  <path d="M100 35 L115 45 Q120 50 117 60 Q115 70 105 75 L100 78 L95 75 Q85 70 83 60 Q80 50 85 45 Z"
+        fill="#1EC0A0"/>
+
+  <!-- White J with plug shape (for dark mode) -->
+  <path d="M85 70 L115 70 L115 140 Q115 155 100 155 Q85 155 85 140 L85 135 Q85 125 100 125 Q105 125 105 130 L105 135"
+        fill="#FFFFFF" stroke="#FFFFFF" stroke-width="2"/>
+
+  <!-- Plug prongs at bottom -->
+  <rect x="88" y="150" width="8" height="15" rx="2" fill="#FFFFFF"/>
+  <rect x="104" y="150" width="8" height="15" rx="2" fill="#FFFFFF"/>
+
+  <!-- JuiceNet Text -->
+  <text x="200" y="125" font-family="'Arial', 'Helvetica', sans-serif" font-size="85" font-weight="700" fill="#FFFFFF">
+    Juice
+  </text>
+  <text x="485" y="125" font-family="'Arial', 'Helvetica', sans-serif" font-size="85" font-weight="700" fill="#1EC0A0">
+    Net
+  </text>
+</svg>
