@@ -119,7 +119,7 @@ services:
         value: anonymous
 
   # OperatorUI Frontend (Static Site)
-  - type: static
+  - type: web
     name: juicehub-ui
     repo: https://github.com/player20/JuiceHub
     branch: main
