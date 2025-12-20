@@ -1,6 +1,10 @@
 #!/bin/sh
 set -e
 
+# Create necessary directories for runtime
+mkdir -p ./Server/tmp/citrine
+echo "Created runtime directories"
+
 # Default to migrate if DB_STRATEGY is not set
 DB_STRATEGY=${DB_STRATEGY:-migrate}
 

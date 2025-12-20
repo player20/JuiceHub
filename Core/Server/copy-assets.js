@@ -19,7 +19,7 @@ if (!source || !target) {
 async function copyDirectory(src, dest) {
   try {
     await fs.mkdir(dest, { recursive: true });
-    console.log(`Created "${dest}" directory`);
+    console.log(`Created directory: ${dest}`);
 
     const entries = await fs.readdir(src, { withFileTypes: true });
 
@@ -28,10 +28,11 @@ async function copyDirectory(src, dest) {
       const destPath = path.join(dest, entry.name);
 
       if (entry.isDirectory()) {
+        console.log(`Copying subdirectory: ${entry.name}`);
         await copyDirectory(srcPath, destPath);
       } else {
         await fs.copyFile(srcPath, destPath);
-        console.log(`Copied ${srcPath} to ${destPath}`);
+        console.log(`  Copied file: ${entry.name}`);
       }
     }
   } catch (err) {
