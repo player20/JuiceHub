@@ -41,7 +41,10 @@
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "sourceMap": true,
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "noEmitOnError": false,
+    "noImplicitAny": false,
+    "suppressImplicitAnyIndexErrors": true
   },
   "references": [
     {
