@@ -31,3 +31,6 @@
 !Server/src/config/sequelize.bridge.config.js
 !Server/copy-assets.js
 !build.mjs
+!db.force-sync.js
+!db.force-sync.ts
+!db.sync.ts
