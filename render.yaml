@@ -36,13 +36,13 @@ services:
       - key: DATABASE_URL
         sync: false  # Set manually in Render dashboard
       - key: BOOTSTRAP_CITRINEOS_DATABASE_HOST
-        sync: false  # e.g., db.xxxxx.supabase.co
+        sync: false  # e.g., aws-1-us-east-1.pooler.supabase.com
       - key: BOOTSTRAP_CITRINEOS_DATABASE_PORT
-        value: 5432
+        value: 6543  # Supabase pooler port (use 5432 for direct connection)
       - key: BOOTSTRAP_CITRINEOS_DATABASE_NAME
         value: postgres
       - key: BOOTSTRAP_CITRINEOS_DATABASE_USERNAME
-        value: postgres
+        sync: false  # e.g., postgres.projectid (required for pooler)
       - key: BOOTSTRAP_CITRINEOS_DATABASE_PASSWORD
         sync: false  # Your Supabase password
       - key: DB_STRATEGY
