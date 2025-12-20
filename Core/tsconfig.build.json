@@ -2,11 +2,19 @@
   "exclude": [
     "**/*.test.ts",
     "**/*.stub.ts",
+    "**/*.example.ts",
     "./node_modules",
     "**/__tests__/*",
+    "**/test/**",
     "./dist",
     "./**/dist",
-    "./**/**/dist"
+    "./**/**/dist",
+    "./migrations/**",
+    "./db.sync.ts",
+    "./db.force-sync.ts",
+    "./jest.config.ts",
+    "./DirectusExtensions/**",
+    "./Swarm/**"
   ],
   "compilerOptions": {
     "target": "es6",
