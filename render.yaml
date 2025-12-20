@@ -119,43 +119,26 @@ services:
         value: anonymous
 
   # OperatorUI Frontend (Static Site)
-  - type: web
-    name: juicehub-ui
-    repo: https://github.com/player20/JuiceHub
-    branch: main
-    rootDir: OperatorUI
-    buildCommand: npm install && npm run build
-    staticPublishPath: dist
-    pullRequestPreviewsEnabled: true
-    headers:
-      - path: /*
-        name: X-Frame-Options
-        value: DENY
-      - path: /*
-        name: X-Content-Type-Options
-        value: nosniff
-      - path: /*
-        name: Referrer-Policy
-        value: strict-origin-when-cross-origin
-    envVars:
-      # Backend URLs - Auto-populated from services above
-      - key: VITE_API_URL
-        fromService:
-          type: web
-          name: juicehub-core
-          envVarKey: RENDER_EXTERNAL_URL
-      - key: VITE_GRAPHQL_URL
-        fromService:
-          type: web
-          name: juicehub-hasura
-          envVarKey: RENDER_EXTERNAL_URL
-      - key: VITE_WS_URL
-        fromService:
-          type: web
-          name: juicehub-core
-          envVarKey: RENDER_EXTERNAL_URL
-      - key: VITE_TENANT_ID
-        value: "1"
+  # NOTE: Create this manually after backend is deployed:
+  # 1. Dashboard → New → Static Site
+  # 2. Repo: player20/JuiceHub
+  # 3. Root Directory: OperatorUI
+  # 4. Build Command: npm install && npm run build
+  # 5. Publish Directory: dist
+  # 6. Environment Variables:
+  #    VITE_API_URL = https://juicehub-core.onrender.com
+  #    VITE_GRAPHQL_URL = https://juicehub-hasura.onrender.com
+  #    VITE_WS_URL = wss://juicehub-core.onrender.com
+  #    VITE_TENANT_ID = 1
+  #
+  # Commented out due to Render blueprint limitations with static sites
+  # - type: web
+  #   name: juicehub-ui
+  #   repo: https://github.com/player20/JuiceHub
+  #   branch: main
+  #   rootDir: OperatorUI
+  #   buildCommand: npm install && npm run build
+  #   staticPublishPath: dist
 
 # Optional: Add these if you want Render-managed services instead of external
 # databases:
