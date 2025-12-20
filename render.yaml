@@ -56,7 +56,7 @@ services:
       - key: BOOTSTRAP_CITRINEOS_FILE_ACCESS_TYPE
         value: local
       - key: BOOTSTRAP_CITRINEOS_FILE_ACCESS_LOCAL_DEFAULT_FILE_PATH
-        value: /tmp/citrine
+        value: "/tmp/citrine"
       - key: BOOTSTRAP_CITRINEOS_CONFIG_FILENAME
         value: config.json
 

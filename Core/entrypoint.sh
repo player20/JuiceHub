@@ -2,8 +2,10 @@
 set -e
 
 # Create necessary directories for runtime
+# Create both absolute and relative paths to handle different path resolution
+mkdir -p /tmp/citrine
 mkdir -p ./Server/tmp/citrine
-echo "Created runtime directories"
+echo "Created runtime directories: /tmp/citrine and ./Server/tmp/citrine"
 
 # Default to migrate if DB_STRATEGY is not set
 DB_STRATEGY=${DB_STRATEGY:-migrate}
