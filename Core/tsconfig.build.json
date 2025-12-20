@@ -18,7 +18,15 @@
     "./Swarm/**",
     "./03_Modules/Alerts/**",
     "./03_Modules/Analytics/**",
-    "./03_Modules/Revenue/**"
+    "./03_Modules/Certificates/**",
+    "./03_Modules/Revenue/**",
+    "./03_Modules/Tenant/**",
+    "./02_Util/src/certificate/CertificateAuthority.ts",
+    "./02_Util/src/certificate/CertificateUtil.ts",
+    "./02_Util/src/export/ExportService.ts",
+    "./02_Util/src/middleware/rateLimiter.ts",
+    "./02_Util/src/middleware/tenantContext.ts",
+    "./02_Util/src/services/QuotaEnforcementService.ts"
   ],
   "compilerOptions": {
     "target": "es2020",
