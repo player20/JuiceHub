@@ -12,7 +12,7 @@ import {
 
 export function createDockerConfig(): SystemConfig {
   return defineConfig({
-    env: 'development',
+    env: (process.env.NODE_ENV === 'production' ? 'production' : 'development') as 'development' | 'production',
     centralSystem: {
       host: '0.0.0.0',
       port: 8080,
@@ -114,7 +114,7 @@ export function createDockerConfig(): SystemConfig {
           {
             id: '0',
             securityProfile: 0,
-            allowUnknownChargingStations: true,
+            allowUnknownChargingStations: process.env.ALLOW_UNKNOWN_CHARGERS === 'true',
             pingInterval: 60,
             host: '0.0.0.0',
             port: 8081,
@@ -146,10 +146,10 @@ export function createDockerConfig(): SystemConfig {
         chargingStationCA: {
           name: 'acme',
           acme: {
-            env: 'staging',
+            env: process.env.ACME_ENV === 'production' ? 'production' : 'staging',
             accountKeyFilePath:
               '/usr/local/apps/citrineos/Swarm/src/assets/certificates/acme_account_key.pem',
-            email: 'test@citrineos.com',
+            email: process.env.ACME_EMAIL || 'admin@juicehub.net',
           },
         },
       },

@@ -78,6 +78,16 @@ services:
       - key: CORS_ALLOWED_ORIGINS
         value: "*"
 
+      # Security Settings
+      - key: ALLOW_UNKNOWN_CHARGERS
+        value: "false"  # Set to "true" only for testing/development
+
+      # ACME Certificate Authority (for charging station certificates)
+      - key: ACME_ENV
+        value: staging  # Change to "production" when ready for live certificates
+      - key: ACME_EMAIL
+        value: admin@juicehub.net  # Email for ACME account notifications
+
   # Hasura GraphQL Engine
   - type: web
     name: juicehub-hasura

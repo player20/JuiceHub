@@ -14,7 +14,7 @@ import path from 'path';
 
 export function createDirectusConfig() {
   return defineConfig({
-    env: 'development',
+    env: (process.env.NODE_ENV === 'production' ? 'production' : 'development') as 'development' | 'production',
     centralSystem: {
       host: '0.0.0.0',
       port: 8080,
@@ -168,7 +168,7 @@ export function createDirectusConfig() {
         },
       },
       authProvider: {
-        localByPass: true,
+        localByPass: process.env.NODE_ENV !== 'production',
       },
       swagger: {
         path: '/docs',
@@ -181,7 +181,7 @@ export function createDirectusConfig() {
           {
             id: '0',
             securityProfile: 0,
-            allowUnknownChargingStations: true,
+            allowUnknownChargingStations: process.env.ALLOW_UNKNOWN_CHARGERS === 'true',
             pingInterval: 60,
             host: '0.0.0.0',
             port: 8081,
@@ -249,7 +249,7 @@ export function createDirectusConfig() {
           {
             id: '4',
             securityProfile: 0,
-            allowUnknownChargingStations: true,
+            allowUnknownChargingStations: process.env.ALLOW_UNKNOWN_CHARGERS === 'true',
             pingInterval: 60,
             host: '0.0.0.0',
             port: 8092,
@@ -271,12 +271,12 @@ export function createDirectusConfig() {
         chargingStationCA: {
           name: 'acme',
           acme: {
-            env: 'staging',
+            env: process.env.ACME_ENV === 'production' ? 'production' : 'staging',
             accountKeyFilePath: path.resolve(
               path.dirname(__filename),
               '../../assets/certificates/acme_account_key.pem',
             ),
-            email: 'test@citrineos.com',
+            email: process.env.ACME_EMAIL || 'admin@juicehub.net',
           },
         },
       },
