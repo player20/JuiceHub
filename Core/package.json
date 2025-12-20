@@ -5,7 +5,9 @@
   "scripts": {
     "install-all": "npm i --verbose",
     "copy-assets": "npm run copy-assets --prefix ./Server",
-    "build": "tsc --build tsconfig.build.json --verbose",
+    "build": "npm run build:esbuild",
+    "build:esbuild": "node build.mjs",
+    "build:tsc": "tsc --build tsconfig.build.json --verbose",
     "build:base:esm": "npm run build:esm --prefix ./00_Base",
     "postbuild": "npm run copy-assets && npm run build:base:esm",
     "clear-cache": "npm cache clean --force",
@@ -52,6 +54,8 @@
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
+    "esbuild": "^0.24.0",
+    "glob": "^11.0.0",
     "sequelize-cli": "^6.6.2",
     "typescript": "^5.8.2"
   }
