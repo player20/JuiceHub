@@ -1,7 +1,7 @@
 {
   "name": "@citrineos/workspace",
   "version": "1.8.0",
-  "private": false,
+  "private": true,
   "scripts": {
     "install-all": "npm i --verbose",
     "copy-assets": "npm run copy-assets --prefix ./Server",
