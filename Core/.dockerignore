@@ -24,8 +24,10 @@
 **/Swarm
 **/data
 
-# include sequelize bridge
+# include sequelize bridge and build scripts
 !Server/
 !Server/src/
 !Server/src/config/
 !Server/src/config/sequelize.bridge.config.js
+!Server/copy-assets.js
+!build.mjs
