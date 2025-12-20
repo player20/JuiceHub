@@ -12,7 +12,7 @@ services:
   # CitrineOS Core Backend
   - type: web
     name: juicehub-core
-    env: docker
+    runtime: docker
     plan: starter  # $7/mo - always-on service
     region: oregon
     repo: https://github.com/player20/JuiceHub
@@ -20,7 +20,6 @@ services:
     rootDir: Core
     dockerfilePath: Server/deploy.Dockerfile
     dockerContext: .
-    dockerCommand: /usr/local/apps/citrineos/entrypoint.sh
     healthCheckPath: /health
     envVars:
       # Application
