@@ -43,8 +43,7 @@
     "sourceMap": true,
     "moduleResolution": "node",
     "noEmitOnError": false,
-    "noImplicitAny": false,
-    "suppressImplicitAnyIndexErrors": true
+    "noImplicitAny": false
   },
   "references": [
     {
