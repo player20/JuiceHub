@@ -59,26 +59,31 @@ async function buildWorkspace(workspace) {
   console.log(`📦 Building ${workspace}...`);
 
   try {
-    // Use tsc with flags to:
-    // - Skip lib check (faster, fewer false positives)
-    // - Disable composite mode (no project references)
+    // Run tsc - it will emit files even with type errors due to noEmitOnError: false in tsconfig
     execSync(
-      `npx tsc --project ${tsconfigPath} --skipLibCheck true --composite false`,
+      `npx tsc --project ${tsconfigPath}`,
       {
         cwd: workspacePath,
-        stdio: 'pipe', // Suppress type error output
+        stdio: 'pipe', // Suppress output
         encoding: 'utf-8',
       }
     );
+    console.log(`  ✅ Compiled successfully`);
   } catch (error) {
-    // TypeScript exits with code 2 when there are type errors
-    // Check if this is expected (type errors with files still generated)
+    // TypeScript exits with code 2 when there are type errors but files are generated
+    // Exit code 1 means real build failure
     if (error.status === 2) {
-      // Type errors present but files generated - this is OK
-      console.log(`  ⚠️  Type errors suppressed (files generated successfully)`);
+      // Type errors present but files still generated - this is expected and OK
+      console.log(`  ⚠️  Type errors present (files generated successfully)`);
+    } else if (error.status === 1) {
+      // Real compilation failure - this is a problem
+      console.error(`  ❌ Compilation failed:`);
+      console.error(error.stdout || error.stderr || error.message);
+      throw error;
     } else {
-      // Real error - build actually failed
-      console.error(`  ❌ Build failed:`, error.stderr || error.message);
+      // Unknown error
+      console.error(`  ❌ Build failed with exit code ${error.status}:`);
+      console.error(error.stdout || error.stderr || error.message);
       throw error;
     }
   }
