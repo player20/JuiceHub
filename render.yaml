@@ -12,8 +12,8 @@ services:
   # CitrineOS Core Backend
   - type: web
     name: juicehub-core
-    runtime: docker
-    plan: free  # Change to 'starter' for production ($7/mo)
+    env: docker
+    plan: starter  # $7/mo - always-on service
     region: oregon
     repo: https://github.com/player20/JuiceHub
     branch: main
@@ -81,10 +81,10 @@ services:
   # Hasura GraphQL Engine
   - type: web
     name: juicehub-hasura
-    runtime: image
+    env: image
     image:
       url: hasura/graphql-engine:v2.40.3
-    plan: free  # Change to 'starter' for production
+    plan: starter  # $7/mo - always-on service
     region: oregon
     healthCheckPath: /healthz
     envVars:
@@ -111,7 +111,7 @@ services:
   # OperatorUI Frontend (Static Site)
   - type: web
     name: juicehub-ui
-    runtime: static
+    env: static
     plan: free  # Static sites are always free
     repo: https://github.com/player20/JuiceHub
     branch: main
