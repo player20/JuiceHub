@@ -1,0 +1,159 @@
+# JuiceHub - Render.com Deployment Blueprint
+# Optimized for Supabase + CloudAMQP + Resend stack
+#
+# Prerequisites (set up externally first):
+# 1. Supabase PostgreSQL database → Get connection string
+# 2. CloudAMQP RabbitMQ instance → Get AMQP URL
+# 3. Resend account → Get API key
+#
+# Deploy: https://dashboard.render.com → New → Blueprint → Select this repo
+
+services:
+  # CitrineOS Core Backend
+  - type: web
+    name: juicehub-core
+    runtime: docker
+    plan: free  # Change to 'starter' for production ($7/mo)
+    region: oregon
+    repo: https://github.com/player20/JuiceHub
+    branch: main
+    rootDir: Core
+    dockerfilePath: Server/deploy.Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    envVars:
+      # Application
+      - key: PORT
+        value: 8080
+      - key: APP_NAME
+        value: all
+      - key: APP_ENV
+        value: production
+      - key: NODE_ENV
+        value: production
+
+      # Database - UPDATE THESE WITH YOUR SUPABASE VALUES
+      - key: DATABASE_URL
+        sync: false  # Set manually in Render dashboard
+      - key: BOOTSTRAP_CITRINEOS_DATABASE_HOST
+        sync: false  # e.g., db.xxxxx.supabase.co
+      - key: BOOTSTRAP_CITRINEOS_DATABASE_PORT
+        value: 5432
+      - key: BOOTSTRAP_CITRINEOS_DATABASE_NAME
+        value: postgres
+      - key: BOOTSTRAP_CITRINEOS_DATABASE_USER
+        value: postgres
+      - key: BOOTSTRAP_CITRINEOS_DATABASE_PASSWORD
+        sync: false  # Your Supabase password
+      - key: DB_STRATEGY
+        value: migrate
+
+      # Message Queue - UPDATE WITH YOUR CLOUDAMQP URL
+      - key: AMQP_URL
+        sync: false  # e.g., amqps://xxx:xxx@gull.rmq.cloudamqp.com/xxx
+
+      # File Storage
+      - key: BOOTSTRAP_CITRINEOS_FILE_ACCESS_TYPE
+        value: local
+      - key: BOOTSTRAP_CITRINEOS_FILE_ACCESS_LOCAL_DEFAULT_FILE_PATH
+        value: /tmp/citrine
+      - key: BOOTSTRAP_CITRINEOS_CONFIG_FILENAME
+        value: config.json
+
+      # AWS Mock (for local storage)
+      - key: AWS_REGION
+        value: us-east-1
+      - key: AWS_ACCESS_KEY_ID
+        value: minioadmin
+      - key: AWS_SECRET_ACCESS_KEY
+        value: minioadmin
+
+      # Email - UPDATE WITH YOUR RESEND API KEY
+      - key: RESEND_API_KEY
+        sync: false  # e.g., re_xxxxxxxxxxxxx
+      - key: EMAIL_FROM
+        value: noreply@juicehub.com
+
+      # CORS - Update after frontend deployment
+      - key: CORS_ALLOWED_ORIGINS
+        value: "*"
+
+  # Hasura GraphQL Engine
+  - type: web
+    name: juicehub-hasura
+    runtime: image
+    image:
+      url: hasura/graphql-engine:v2.40.3
+    plan: free  # Change to 'starter' for production
+    region: oregon
+    healthCheckPath: /healthz
+    envVars:
+      # Database - Same as Core backend
+      - key: HASURA_GRAPHQL_DATABASE_URL
+        sync: false  # Use Supabase Pooler URL (port 6543)
+
+      # Console & Settings
+      - key: HASURA_GRAPHQL_ENABLE_CONSOLE
+        value: true
+      - key: HASURA_GRAPHQL_DEV_MODE
+        value: true
+      - key: HASURA_GRAPHQL_ENABLED_LOG_TYPES
+        value: startup,http-log,webhook-log,websocket-log,query-log
+      - key: HASURA_GRAPHQL_ENABLE_TELEMETRY
+        value: false
+
+      # Security - SET IN PRODUCTION
+      - key: HASURA_GRAPHQL_ADMIN_SECRET
+        generateValue: true
+      - key: HASURA_GRAPHQL_UNAUTHORIZED_ROLE
+        value: anonymous
+
+  # OperatorUI Frontend (Static Site)
+  - type: web
+    name: juicehub-ui
+    runtime: static
+    plan: free  # Static sites are always free
+    region: oregon
+    repo: https://github.com/player20/JuiceHub
+    branch: main
+    rootDir: OperatorUI
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    pullRequestPreviewsEnabled: true
+    headers:
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+    envVars:
+      # Backend URLs - Auto-populated from services above
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: juicehub-core
+          envVarKey: RENDER_EXTERNAL_URL
+      - key: VITE_GRAPHQL_URL
+        fromService:
+          type: web
+          name: juicehub-hasura
+          envVarKey: RENDER_EXTERNAL_URL
+      - key: VITE_WS_URL
+        fromService:
+          type: web
+          name: juicehub-core
+          envVarKey: RENDER_EXTERNAL_URL
+      - key: VITE_TENANT_ID
+        value: "1"
+
+# Optional: Add these if you want Render-managed services instead of external
+# databases:
+#   - name: juicehub-postgres
+#     plan: starter  # $7/month
+#     databaseName: citrine
+#     user: citrine
+#     region: oregon
