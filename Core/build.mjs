@@ -94,6 +94,66 @@ async function buildWorkspace(workspace) {
   console.log(`✅ ${workspace} built successfully`);
 }
 
+async function buildMigrations() {
+  console.log('📦 Compiling migrations...');
+
+  try {
+    const migrationsPath = join(__dirname, 'migrations');
+    const distMigrationsPath = join(__dirname, 'dist', 'migrations');
+
+    // Create dist/migrations directory
+    await mkdir(distMigrationsPath, { recursive: true });
+
+    // Find all TypeScript migration files
+    const migrationFiles = await glob('*.ts', {
+      cwd: migrationsPath,
+      absolute: true,
+    });
+
+    if (migrationFiles.length === 0) {
+      console.log('  ⚠️  No migration files found');
+      return;
+    }
+
+    console.log(`  📄 Found ${migrationFiles.length} migration files`);
+
+    // Compile each migration file individually
+    for (const migrationFile of migrationFiles) {
+      const filename = migrationFile.split('/').pop();
+      const outFile = join(distMigrationsPath, filename.replace('.ts', '.js'));
+
+      try {
+        execSync(
+          `npx tsc ${migrationFile} --outDir ${distMigrationsPath} --module commonjs --target es2020 --esModuleInterop --skipLibCheck --declaration --sourceMap --experimentalDecorators --emitDecoratorMetadata`,
+          {
+            cwd: __dirname,
+            stdio: 'pipe',
+            encoding: 'utf-8',
+          }
+        );
+      } catch (error) {
+        // TypeScript may exit with non-zero even if files are generated
+        // Check if the output file exists
+        const fs = await import('fs/promises');
+        try {
+          await fs.access(outFile);
+          // File exists, compilation succeeded despite error
+          console.log(`  ⚠️  ${filename} compiled with warnings`);
+        } catch {
+          // File doesn't exist, real error
+          console.error(`  ❌ Failed to compile ${filename}`);
+          throw error;
+        }
+      }
+    }
+
+    console.log(`  ✅ Compiled ${migrationFiles.length} migrations successfully`);
+  } catch (error) {
+    console.error('  ❌ Migration compilation failed:', error.message);
+    throw error;
+  }
+}
+
 async function buildAll() {
   try {
     console.log('🔨 Building CitrineOS with TypeScript...\n');
@@ -102,6 +162,9 @@ async function buildAll() {
     for (const workspace of workspaces) {
       await buildWorkspace(workspace);
     }
+
+    // Compile migrations after workspaces
+    await buildMigrations();
 
     console.log('\n✅ All modules built successfully!\n');
     process.exit(0);
