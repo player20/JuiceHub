@@ -57,11 +57,12 @@ import {
   TransactionsModule,
   TransactionsOcpp201Api,
 } from '@citrineos/transactions';
-import {
-  CertificatesDataApi,
-  CertificatesModule,
-  CertificatesOcpp201Api,
-} from '@citrineos/certificates';
+// Certificates module excluded due to missing dependencies
+// import {
+//   CertificatesDataApi,
+//   CertificatesModule,
+//   CertificatesOcpp201Api,
+// } from '@citrineos/certificates';
 import {
   EVDriverDataApi,
   EVDriverModule,
@@ -428,9 +429,10 @@ export class CitrineOSServer {
   }
 
   private async initAllModules() {
-    if (this._config.modules.certificates) {
-      await this.initCertificatesModule();
-    }
+    // Certificates module excluded due to missing dependencies
+    // if (this._config.modules.certificates) {
+    //   await this.initCertificatesModule();
+    // }
 
     if (this._config.modules.configuration) {
       await this.initConfigurationModule();
@@ -474,30 +476,31 @@ export class CitrineOSServer {
     }
   }
 
-  private async initCertificatesModule() {
-    const module = new CertificatesModule(
-      this._config,
-      this._cache,
-      this._createSender(),
-      this._createHandler(),
-      this._logger,
-      this._repositoryStore.deviceModelRepository,
-      this._repositoryStore.certificateRepository,
-      this._repositoryStore.locationRepository,
-    );
-    await this.initHandlersAndAddModule(module);
-    this.apis.push(
-      new CertificatesOcpp201Api(module, this._server, this._logger),
-      new CertificatesDataApi(
-        module,
-        this._server,
-        this._fileStorage,
-        this._networkConnection!,
-        this._config.util.networkConnection.websocketServers,
-        this._logger,
-      ),
-    );
-  }
+  // Certificates module excluded due to missing dependencies
+  // private async initCertificatesModule() {
+  //   const module = new CertificatesModule(
+  //     this._config,
+  //     this._cache,
+  //     this._createSender(),
+  //     this._createHandler(),
+  //     this._logger,
+  //     this._repositoryStore.deviceModelRepository,
+  //     this._repositoryStore.certificateRepository,
+  //     this._repositoryStore.locationRepository,
+  //   );
+  //   await this.initHandlersAndAddModule(module);
+  //   this.apis.push(
+  //     new CertificatesOcpp201Api(module, this._server, this._logger),
+  //     new CertificatesDataApi(
+  //       module,
+  //       this._server,
+  //       this._fileStorage,
+  //       this._networkConnection!,
+  //       this._config.util.networkConnection.websocketServers,
+  //       this._logger,
+  //     ),
+  //   );
+  // }
 
   private async initConfigurationModule() {
     const module = new ConfigurationModule(
@@ -628,9 +631,10 @@ export class CitrineOSServer {
 
   private async initModule(eventGroup = this.eventGroup) {
     switch (eventGroup) {
-      case EventGroup.Certificates:
-        await this.initCertificatesModule();
-        break;
+      // Certificates module excluded due to missing dependencies
+      // case EventGroup.Certificates:
+      //   await this.initCertificatesModule();
+      //   break;
       case EventGroup.Configuration:
         await this.initConfigurationModule();
         break;
