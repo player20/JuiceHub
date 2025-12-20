@@ -192,7 +192,7 @@ export function createDockerConfig() {
         exposeMessage: true,
       },
       authProvider: {
-        localByPass: process.env.NODE_ENV !== 'production',
+        localByPass: true, // Use local auth (set to false and configure OIDC for production auth)
       },
       networkConnection: {
         websocketServers: [
