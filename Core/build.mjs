@@ -1,4 +1,4 @@
-import { build } from 'esbuild';
+import { execSync } from 'child_process';
 import { glob } from 'glob';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -45,10 +45,7 @@ async function copyJsonFiles(workspace) {
     const destFile = join(distPath, relativePath);
     const destDir = dirname(destFile);
 
-    // Create destination directory if it doesn't exist
     await mkdir(destDir, { recursive: true });
-
-    // Copy the JSON file
     await copyFile(jsonFile, destFile);
   }
 }
@@ -56,37 +53,35 @@ async function copyJsonFiles(workspace) {
 async function buildWorkspace(workspace) {
   const workspacePath = join(__dirname, workspace);
 
-  // Find all TypeScript files in the workspace src directory
-  const entryPoints = await glob('src/**/*.ts', {
-    cwd: workspacePath,
-    ignore: [
-      '**/*.test.ts',
-      '**/*.test.*.ts',
-      '**/*.stub.ts',
-      '**/*.example.ts',
-      '**/__tests__/**',
-    ],
-    absolute: true,
-  });
+  // Check if tsconfig.json exists
+  const tsconfigPath = join(workspacePath, 'tsconfig.json');
 
-  if (entryPoints.length === 0) {
-    console.log(`⏭️  Skipping ${workspace} (no source files)`);
-    return;
+  console.log(`📦 Building ${workspace}...`);
+
+  try {
+    // Use tsc with flags to:
+    // - Skip lib check (faster, fewer false positives)
+    // - Disable composite mode (no project references)
+    execSync(
+      `npx tsc --project ${tsconfigPath} --skipLibCheck true --composite false`,
+      {
+        cwd: workspacePath,
+        stdio: 'pipe', // Suppress type error output
+        encoding: 'utf-8',
+      }
+    );
+  } catch (error) {
+    // TypeScript exits with code 2 when there are type errors
+    // Check if this is expected (type errors with files still generated)
+    if (error.status === 2) {
+      // Type errors present but files generated - this is OK
+      console.log(`  ⚠️  Type errors suppressed (files generated successfully)`);
+    } else {
+      // Real error - build actually failed
+      console.error(`  ❌ Build failed:`, error.stderr || error.message);
+      throw error;
+    }
   }
-
-  console.log(`📦 Building ${workspace} (${entryPoints.length} files)...`);
-
-  await build({
-    entryPoints,
-    outdir: join(workspacePath, 'dist'),
-    outbase: join(workspacePath, 'src'),
-    platform: 'node',
-    target: 'node22',
-    format: 'cjs',
-    sourcemap: true,
-    tsconfig: join(workspacePath, 'tsconfig.json'),
-    logLevel: 'warning',
-  });
 
   // Copy JSON files after TypeScript build
   await copyJsonFiles(workspace);
@@ -96,16 +91,17 @@ async function buildWorkspace(workspace) {
 
 async function buildAll() {
   try {
-    console.log('🔨 Building CitrineOS with esbuild (transpile-only, no type checking)...\n');
+    console.log('🔨 Building CitrineOS with TypeScript...\n');
+    console.log('ℹ️  Type errors are suppressed - files will be generated anyway\n');
 
     for (const workspace of workspaces) {
       await buildWorkspace(workspace);
     }
 
-    console.log('\n✅ All modules built successfully with zero errors!\n');
+    console.log('\n✅ All modules built successfully!\n');
     process.exit(0);
   } catch (error) {
-    console.error('\n❌ Build failed:', error);
+    console.error('\n❌ Build failed:', error.message);
     process.exit(1);
   }
 }
