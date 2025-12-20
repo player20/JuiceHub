@@ -163,7 +163,7 @@ export function createDockerConfig() {
       },
       messageBroker: {
         amqp: {
-          url: 'amqp://guest:guest@amqp-broker:5672',
+          url: process.env.AMQP_URL || 'amqp://guest:guest@amqp-broker:5672',
           exchange: 'citrineos',
         },
       },
