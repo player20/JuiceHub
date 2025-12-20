@@ -10,6 +10,7 @@
     "build:tsc": "tsc --build tsconfig.build.json --verbose",
     "build:base:esm": "npm run build:esm --prefix ./00_Base",
     "postbuild": "npm run copy-assets",
+    "typecheck": "tsc --build tsconfig.build.json --noEmit",
     "clear-cache": "npm cache clean --force",
     "remove-dependencies": "rm -rf package-lock.json **/package-lock.json **/**/package-lock.json node_modules **/node_modules **/**/node_modules",
     "fresh": "npm run clean && npm run remove-dependencies && npm run clear-cache",
