@@ -3,7 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 'use strict';
 
-process.env.APP_ENV = 'local';
+// Use current APP_ENV instead of forcing 'local'
+// process.env.APP_ENV = 'local';
 
 import { DefaultSequelizeInstance } from '@citrineos/data';
 import { loadBootstrapConfig } from '@citrineos/base';

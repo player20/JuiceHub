@@ -1,7 +1,9 @@
 // SPDX-FileCopyrightText: 2025 Contributors to the CitrineOS Project
 //
 // SPDX-License-Identifier: Apache-2.0
-process.env.APP_ENV = 'local'; // needs to be before systemConfig import - careful with prettier formatter!
+
+// Use current APP_ENV instead of forcing 'local' for production deployments
+// process.env.APP_ENV = 'local';
 
 import { DefaultSequelizeInstance } from '@citrineos/data';
 import { loadBootstrapConfig } from '@citrineos/base';
