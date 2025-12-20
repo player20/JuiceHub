@@ -80,6 +80,7 @@ Thumbs.db
 *.key
 *.cert
 *.crt
+!**/assets/certificates/*.pem
 !**/dist/assets/certificates/
 
 # Config overrides
