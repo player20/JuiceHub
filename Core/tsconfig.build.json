@@ -17,9 +17,10 @@
     "./Swarm/**"
   ],
   "compilerOptions": {
-    "target": "es6",
+    "target": "es2020",
+    "lib": ["es2020"],
     "module": "commonjs",
-    "strict": true,
+    "strict": false,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "skipLibCheck": true,
@@ -27,6 +28,13 @@
     "declaration": true,
     "resolveJsonModule": true,
     "esModuleInterop": true,
-    "sourceMap": true
-  }
+    "sourceMap": true,
+    "moduleResolution": "node",
+    "types": ["node"]
+  },
+  "references": [
+    {
+      "path": "./Server"
+    }
+  ]
 }
