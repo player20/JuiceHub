@@ -1,7 +1,9 @@
 import { build } from 'esbuild';
 import { glob } from 'glob';
 import { fileURLToPath } from 'url';
-import { dirname, join, relative } from 'path';
+import { dirname, join } from 'path';
+import { copyFile, mkdir } from 'fs/promises';
+import { relative } from 'path';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -20,6 +22,36 @@ const workspaces = [
   '03_Modules/Transactions',
   'Server',
 ];
+
+async function copyJsonFiles(workspace) {
+  const workspacePath = join(__dirname, workspace);
+  const srcPath = join(workspacePath, 'src');
+  const distPath = join(workspacePath, 'dist');
+
+  // Find all JSON files in src directory
+  const jsonFiles = await glob('**/*.json', {
+    cwd: srcPath,
+    absolute: true,
+  });
+
+  if (jsonFiles.length === 0) {
+    return;
+  }
+
+  console.log(`  📄 Copying ${jsonFiles.length} JSON files...`);
+
+  for (const jsonFile of jsonFiles) {
+    const relativePath = relative(srcPath, jsonFile);
+    const destFile = join(distPath, relativePath);
+    const destDir = dirname(destFile);
+
+    // Create destination directory if it doesn't exist
+    await mkdir(destDir, { recursive: true });
+
+    // Copy the JSON file
+    await copyFile(jsonFile, destFile);
+  }
+}
 
 async function buildWorkspace(workspace) {
   const workspacePath = join(__dirname, workspace);
@@ -55,6 +87,9 @@ async function buildWorkspace(workspace) {
     tsconfig: join(workspacePath, 'tsconfig.json'),
     logLevel: 'warning',
   });
+
+  // Copy JSON files after TypeScript build
+  await copyJsonFiles(workspace);
 
   console.log(`✅ ${workspace} built successfully`);
 }
