@@ -1,10 +1,9 @@
 // SPDX-FileCopyrightText: 2025 Contributors to the CitrineOS Project
 //
 // SPDX-License-Identifier: Apache-2.0
-require('ts-node/register');
 
 module.exports = (async () => {
-  const { loadBootstrapConfig } = require('./bootstrap.config');
+  const { loadBootstrapConfig } = require('@citrineos/base');
 
   try {
     const bootstrapConfig = loadBootstrapConfig();
