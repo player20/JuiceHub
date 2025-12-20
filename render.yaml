@@ -113,7 +113,6 @@ services:
     name: juicehub-ui
     runtime: static
     plan: free  # Static sites are always free
-    region: oregon
     repo: https://github.com/player20/JuiceHub
     branch: main
     rootDir: OperatorUI
