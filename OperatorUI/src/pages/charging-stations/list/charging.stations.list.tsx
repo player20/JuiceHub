@@ -20,7 +20,7 @@ import { DebounceSearch } from '../../../components/debounce-search';
 import { EMPTY_FILTER } from '@util/consts';
 import { MenuSection } from '../../../components/main-menu/main.menu';
 import { instanceToPlain } from 'class-transformer';
-import { ModalComponentType } from '../../../AppModal';
+import { ModalComponentType } from '../../../types/modal.types';
 import { useDispatch } from 'react-redux';
 import { openModal } from '../../../redux/modal.slice';
 import { ActionType } from '@util/auth';

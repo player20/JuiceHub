@@ -7,7 +7,7 @@ import React, { useCallback, useMemo } from 'react';
 import { CanAccess, useNavigation } from '@refinedev/core';
 import { useDispatch } from 'react-redux';
 import { instanceToPlain } from 'class-transformer';
-import { ModalComponentType } from '../../../AppModal';
+import { ModalComponentType } from '../../../types/modal.types';
 import { getChargingStationColumns } from '../../charging-stations/columns';
 import { openModal } from '../../../redux/modal.slice';
 import { ResourceType, ActionType, AccessDeniedFallback } from '@util/auth';

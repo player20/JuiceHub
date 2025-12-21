@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Button, Flex, Form } from 'antd';
-import { ModalComponentType } from '../../../AppModal';
+import { ModalComponentType } from '../../../types/modal.types';
 import { chargingStationActionMap } from '../../../message/1.6';
 import { openModal, closeModal } from '../../../redux/modal.slice';
 import { useDispatch } from 'react-redux';

@@ -21,7 +21,7 @@ import React, { useCallback } from 'react';
 import { ChargingStationDto } from '../../../dtos/charging.station.dto';
 import { useDispatch } from 'react-redux';
 import { openModal } from '../../../redux/modal.slice';
-import { ModalComponentType } from '../../../AppModal';
+import { ModalComponentType } from '../../../types/modal.types';
 import { instanceToPlain } from 'class-transformer';
 import { formatDate } from '../../../components/timestamp-display';
 import { TransactionDto } from '../../../dtos/transaction.dto';

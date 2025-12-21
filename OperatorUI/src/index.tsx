@@ -8,6 +8,7 @@ import { createRoot } from 'react-dom/client';
 import App, { authProvider } from './App';
 import { Provider } from 'react-redux';
 import store from './redux/store';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 const container = document.getElementById('root') as HTMLElement;
 const root = createRoot(container);
@@ -20,9 +21,11 @@ const init = async () => {
     );
   }
   root.render(
-    <Provider store={store}>
-      <App />
-    </Provider>,
+    <ErrorBoundary>
+      <Provider store={store}>
+        <App />
+      </Provider>
+    </ErrorBoundary>,
   );
 };
 

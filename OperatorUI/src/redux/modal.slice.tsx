@@ -4,7 +4,7 @@
 
 import { createSelector, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from './store';
-import { ModalComponentType } from '../AppModal';
+import { ModalComponentType } from '../types/modal.types';
 
 export const ModalStateName = 'modal';
 

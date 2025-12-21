@@ -11,15 +11,7 @@ import { RemoteStopTransactionModal } from './modals/remote-stop/remote.stop.mod
 import { ResetModal } from './modals/reset/reset.modal';
 import { OtherCommandsModal } from './modals/other-commands/other.commands.modal';
 import { GetLogsModal } from './modals/2.0.1/get-logs/get.logs.modal';
-
-export enum ModalComponentType {
-  remoteStart,
-  remoteStop,
-  reset,
-  getLogs,
-  otherCommands,
-  otherCommandsDynamic,
-}
+import { ModalComponentType } from './types/modal.types';
 
 const MODAL_COMPONENTS: Partial<{
   [key in ModalComponentType]: React.FC<any>;

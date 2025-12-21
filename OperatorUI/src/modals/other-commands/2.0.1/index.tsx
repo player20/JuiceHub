@@ -4,7 +4,7 @@
 
 import { instanceToPlain } from 'class-transformer';
 import { Button, Flex, Form } from 'antd';
-import { ModalComponentType } from '../../../AppModal';
+import { ModalComponentType } from '../../../types/modal.types';
 import { chargingStationActionMap } from '../../../message/2.0.1';
 import { openModal, closeModal } from '../../../redux/modal.slice';
 import { useDispatch } from 'react-redux';
