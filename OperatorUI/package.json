@@ -87,7 +87,7 @@
     "lint-fix": "npm run prettier && npx eslint --fix ./",
     "prettier": "prettier --write .",
     "dev": "refine dev",
-    "build": "refine build",
+    "build": "refine build && cp dist/index.html dist/404.html",
     "build:check": "tsc && refine build",
     "start": "refine start",
     "refine": "refine",
