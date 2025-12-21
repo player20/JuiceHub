@@ -98,25 +98,38 @@ services:
     region: oregon
     healthCheckPath: /healthz
     envVars:
-      # Database - Same as Core backend
+      # Database - Same Supabase database as Core backend
       - key: HASURA_GRAPHQL_DATABASE_URL
-        sync: false  # Use Supabase Pooler URL (port 6543)
+        sync: false  # IMPORTANT: Set this to your Supabase Pooler URL
+                     # Format: postgresql://postgres.projectid:password@aws-1-us-east-1.pooler.supabase.com:6543/postgres
 
       # Console & Settings
       - key: HASURA_GRAPHQL_ENABLE_CONSOLE
-        value: true
+        value: "true"
       - key: HASURA_GRAPHQL_DEV_MODE
-        value: true
+        value: "false"  # Set to false for production
       - key: HASURA_GRAPHQL_ENABLED_LOG_TYPES
         value: startup,http-log,webhook-log,websocket-log,query-log
       - key: HASURA_GRAPHQL_ENABLE_TELEMETRY
-        value: false
+        value: "false"
+
+      # Server Configuration
+      - key: HASURA_GRAPHQL_SERVER_PORT
+        value: "8080"
 
       # Security - SET IN PRODUCTION
       - key: HASURA_GRAPHQL_ADMIN_SECRET
-        generateValue: true
+        sync: false  # Set a strong admin secret manually
       - key: HASURA_GRAPHQL_UNAUTHORIZED_ROLE
         value: anonymous
+
+      # CORS - Update after frontend deployment
+      - key: HASURA_GRAPHQL_CORS_DOMAIN
+        value: "*"  # Update with your frontend URL: https://juicehub-ui.onrender.com
+
+      # Metadata
+      - key: HASURA_GRAPHQL_METADATA_DATABASE_URL
+        sync: false  # Same as HASURA_GRAPHQL_DATABASE_URL
 
   # OperatorUI Frontend (Static Site)
   # NOTE: Create this manually after backend is deployed:
