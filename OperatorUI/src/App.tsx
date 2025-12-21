@@ -50,7 +50,7 @@ import { resources as revenueResources } from './pages/revenue';
 import { resources as alertsResources } from './pages/alerts';
 import { resources as settingsResources } from './pages/settings';
 
-// Lazy load route components for code splitting
+// Lazy load route components for code splitting (fixed import order)
 const OverviewRoutes = lazy(() =>
   import('./pages/overview').then((m) => ({ default: m.routes })),
 );
