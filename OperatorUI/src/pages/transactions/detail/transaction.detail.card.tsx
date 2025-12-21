@@ -32,9 +32,9 @@ export const TransactionDetailCard = ({
 
   // Calculate session duration
   const getDuration = () => {
-    if (!transaction.timeStart) return null;
-    const start = new Date(transaction.timeStart);
-    const end = transaction.timeEnd ? new Date(transaction.timeEnd) : new Date();
+    if (!transaction.startTime) return null;
+    const start = new Date(transaction.startTime);
+    const end = transaction.endTime ? new Date(transaction.endTime) : new Date();
     const durationMs = end.getTime() - start.getTime();
     const minutes = Math.floor(durationMs / 60000);
     const hours = Math.floor(minutes / 60);
@@ -46,10 +46,10 @@ export const TransactionDetailCard = ({
   const getStatusBadge = () => {
     if (transaction.isActive) {
       return <Badge status="processing" text="Active" />;
-    } else if (transaction.stopReason) {
+    } else if (transaction.stoppedReason) {
       const isNormalStop =
-        transaction.stopReason === 'EVDisconnected' ||
-        transaction.stopReason === 'Normal';
+        transaction.stoppedReason === 'EVDisconnected' ||
+        transaction.stoppedReason === 'Normal';
       return (
         <Badge
           status={isNormalStop ? 'success' : 'error'}
@@ -62,14 +62,14 @@ export const TransactionDetailCard = ({
 
   // Get stop reason tag
   const getStopReasonTag = () => {
-    if (!transaction.stopReason) return null;
+    if (!transaction.stoppedReason) return null;
 
     const isNormalStop =
-      transaction.stopReason === 'EVDisconnected' ||
-      transaction.stopReason === 'Normal';
+      transaction.stoppedReason === 'EVDisconnected' ||
+      transaction.stoppedReason === 'Normal';
     const isError =
-      transaction.stopReason.includes('Error') ||
-      transaction.stopReason.includes('Fault');
+      transaction.stoppedReason.includes('Error') ||
+      transaction.stoppedReason.includes('Fault');
 
     let color = 'default';
     let icon = <InfoCircleOutlined />;
@@ -84,7 +84,7 @@ export const TransactionDetailCard = ({
 
     return (
       <Tag color={color} icon={icon}>
-        {transaction.stopReason}
+        {transaction.stoppedReason}
       </Tag>
     );
   };
@@ -144,7 +144,7 @@ export const TransactionDetailCard = ({
               <UserOutlined /> Driver
             </Text>
             <Text strong style={{ fontSize: 16 }}>
-              {transaction.idTag || '-'}
+              {transaction.authorization?.idToken || '-'}
             </Text>
           </Flex>
         </Col>
@@ -175,7 +175,7 @@ export const TransactionDetailCard = ({
                   <td>
                     <Text strong>Connector ID</Text>
                   </td>
-                  <td>{transaction.evseDatabaseId || '-'}</td>
+                  <td>{transaction.connectorId || '-'}</td>
                 </tr>
                 <tr>
                   <td>
@@ -200,8 +200,8 @@ export const TransactionDetailCard = ({
                     <Text strong>Start Time</Text>
                   </td>
                   <td>
-                    {transaction.timeStart
-                      ? new Date(transaction.timeStart).toLocaleString()
+                    {transaction.startTime
+                      ? new Date(transaction.startTime).toLocaleString()
                       : '-'}
                   </td>
                 </tr>
@@ -210,8 +210,8 @@ export const TransactionDetailCard = ({
                     <Text strong>End Time</Text>
                   </td>
                   <td>
-                    {transaction.timeEnd
-                      ? new Date(transaction.timeEnd).toLocaleString()
+                    {transaction.endTime
+                      ? new Date(transaction.endTime).toLocaleString()
                       : transaction.isActive
                       ? 'In Progress'
                       : '-'}
@@ -252,8 +252,8 @@ export const TransactionDetailCard = ({
                     <Text strong>Meter Start</Text>
                   </td>
                   <td>
-                    {transaction.meterStart
-                      ? `${(transaction.meterStart / 1000).toFixed(2)} kWh`
+                    {transaction.startTransaction?.meterStart
+                      ? `${(transaction.startTransaction.meterStart / 1000).toFixed(2)} kWh`
                       : '-'}
                   </td>
                 </tr>
@@ -262,8 +262,8 @@ export const TransactionDetailCard = ({
                     <Text strong>Meter Stop</Text>
                   </td>
                   <td>
-                    {transaction.meterStop
-                      ? `${(transaction.meterStop / 1000).toFixed(2)} kWh`
+                    {transaction.stopTransaction?.meterStop
+                      ? `${(transaction.stopTransaction.meterStop / 1000).toFixed(2)} kWh`
                       : transaction.isActive
                       ? 'Ongoing'
                       : '-'}
@@ -281,13 +281,13 @@ export const TransactionDetailCard = ({
                     </Text>
                   </td>
                 </tr>
-                {transaction.totalCost > 0 && (
+                {transaction.totalCost != null && transaction.totalCost > 0 && (
                   <tr>
                     <td>
                       <Text strong>Rate</Text>
                     </td>
                     <td>
-                      {transaction.totalKwh > 0
+                      {transaction.totalKwh != null && transaction.totalKwh > 0
                         ? `$${(transaction.totalCost / transaction.totalKwh).toFixed(3)}/kWh`
                         : '-'}
                     </td>

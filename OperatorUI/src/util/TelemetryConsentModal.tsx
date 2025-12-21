@@ -21,7 +21,7 @@ export async function checkTelemetryConsent(): Promise<boolean | undefined> {
   try {
     const systemConfigRaw = await client.getRaw(`/ocpprouter/systemConfig`);
     systemConfig = systemConfigRaw.data as SystemConfig;
-    const telemetryConsent = systemConfig.userPreferences.telemetryConsent;
+    const telemetryConsent = systemConfig?.userPreferences?.telemetryConsent;
     if (typeof telemetryConsent === 'boolean') {
       return telemetryConsent;
     }
@@ -34,7 +34,7 @@ export async function checkTelemetryConsent(): Promise<boolean | undefined> {
 export async function saveTelemetryConsent(
   telemetryConsent: boolean,
 ): Promise<void> {
-  if (systemConfig === null) {
+  if (systemConfig === null || !systemConfig.userPreferences) {
     throw new Error('System config not initialized');
   }
   systemConfig.userPreferences.telemetryConsent = telemetryConsent;

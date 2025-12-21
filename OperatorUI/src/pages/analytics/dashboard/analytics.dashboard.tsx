@@ -236,7 +236,6 @@ export const AnalyticsDashboard: React.FC = () => {
             suffix="kWh"
             subtitle="total consumption"
             loading={aggregateLoading}
-            prefix={<ThunderboltOutlined />}
           />
         </Col>
         <Col xs={24} sm={12} lg={6}>

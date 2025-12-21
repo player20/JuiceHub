@@ -229,7 +229,7 @@ export const ChargingStationLiveStats: FC<ConnectorStatsProps> = ({ stationId })
               </Descriptions.Item>
 
               <Descriptions.Item label="Authorization">
-                <Tag>{tx.idTag || 'auto-host-charging'}</Tag>
+                <Tag>{tx.authorization?.idToken || 'auto-host-charging'}</Tag>
               </Descriptions.Item>
 
               <Descriptions.Item label="Charging State">
