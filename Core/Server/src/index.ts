@@ -142,9 +142,22 @@ export class CitrineOSServer {
     this._server = server || fastify().withTypeProvider<JsonSchemaToTsProvider>();
 
     // enable cors
+    const allowedOrigins = process.env.CORS_ALLOWED_ORIGINS?.split(',') || [
+      'https://juicehub-ui.onrender.com',
+      'http://localhost:5173', // Development
+    ];
+
     (this._server as any).register(cors, {
-      origin: true, // This can be customized to specify allowed origins
-      methods: ['GET', 'POST', 'PUT', 'DELETE'], // Specify allowed HTTP methods
+      origin: (origin, callback) => {
+        // Allow requests with no origin (like mobile apps, curl, Postman)
+        if (!origin || allowedOrigins.includes(origin)) {
+          callback(null, true);
+        } else {
+          callback(new Error('Not allowed by CORS'), false);
+        }
+      },
+      methods: ['GET', 'POST', 'PUT', 'DELETE'],
+      credentials: true, // Allow cookies/auth headers
     });
 
     console.log('Bootstrap configuration loaded');

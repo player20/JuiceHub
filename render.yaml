@@ -74,9 +74,9 @@ services:
       - key: EMAIL_FROM
         value: noreply@juicehub.com
 
-      # CORS - Update after frontend deployment
+      # CORS - Restricted to production domain and local development
       - key: CORS_ALLOWED_ORIGINS
-        value: "*"
+        value: "https://juicehub-ui.onrender.com,http://localhost:5173"
 
       # Security Settings
       - key: ALLOW_UNKNOWN_CHARGERS
@@ -123,9 +123,9 @@ services:
       - key: HASURA_GRAPHQL_UNAUTHORIZED_ROLE
         value: anonymous
 
-      # CORS - Update after frontend deployment
+      # CORS - Restricted to production domain
       - key: HASURA_GRAPHQL_CORS_DOMAIN
-        value: "*"  # Update with your frontend URL: https://juicehub-ui.onrender.com
+        value: "https://juicehub-ui.onrender.com"
 
       # Metadata
       - key: HASURA_GRAPHQL_METADATA_DATABASE_URL

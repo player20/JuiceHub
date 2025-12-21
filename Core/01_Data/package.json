@@ -24,7 +24,6 @@
   },
   "dependencies": {
     "@citrineos/base": "1.8.0",
-    "@types/sequelize": "4.28.20",
     "@types/validator": "13.11.1",
     "pg": "8.11.3",
     "pg-hstore": "2.3.4",

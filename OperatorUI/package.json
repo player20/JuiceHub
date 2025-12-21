@@ -76,8 +76,9 @@
     "eslint-plugin-react": "^7.37.1",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.3.4",
+    "rollup-plugin-visualizer": "^6.0.5",
     "sass": "^1.77.8",
-    "typescript": "^5.4.2",
+    "typescript": "5.8.2",
     "typescript-eslint": "^8.9.0",
     "vite": "^6.2.1",
     "vite-plugin-node-polyfills": "^0.23.0"
@@ -89,6 +90,7 @@
     "dev": "refine dev",
     "build": "refine build && cp dist/index.html dist/404.html",
     "build:check": "tsc && refine build",
+    "analyze": "npm run build && open bundle-analysis.html",
     "start": "refine start",
     "refine": "refine",
     "codegen": "graphql-codegen --config ./graphql.config.ts",

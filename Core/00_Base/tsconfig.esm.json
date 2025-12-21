@@ -8,6 +8,9 @@
     "rootDir": "./src",
     "module": "ESNext",
     "target": "ES2015",
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "sourceMap": false,
+    "declaration": true,
+    "declarationMap": false
   }
 }
