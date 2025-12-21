@@ -23,6 +23,9 @@ const workspaces = [
   'Server',
 ];
 
+// Modules that need ESM build (used by frontend/Vite)
+const esmModules = ['00_Base'];
+
 async function copyJsonFiles(workspace) {
   const workspacePath = join(__dirname, workspace);
   const srcPath = join(workspacePath, 'src');
@@ -90,6 +93,30 @@ async function buildWorkspace(workspace) {
 
   // Copy JSON files after TypeScript build
   await copyJsonFiles(workspace);
+
+  // Build ESM if this module requires it (for Vite/frontend usage)
+  if (esmModules.includes(workspace)) {
+    console.log(`  📦 Building ESM for ${workspace}...`);
+    try {
+      execSync(
+        'npm run build:esm',
+        {
+          cwd: workspacePath,
+          stdio: 'pipe',
+          encoding: 'utf-8',
+        }
+      );
+      console.log(`  ✅ ESM build completed`);
+    } catch (error) {
+      if (error.status === 2) {
+        console.log(`  ⚠️  ESM build completed with type warnings`);
+      } else {
+        console.error(`  ❌ ESM build failed:`);
+        console.error(error.stdout || error.stderr || error.message);
+        throw error;
+      }
+    }
+  }
 
   console.log(`✅ ${workspace} built successfully`);
 }
