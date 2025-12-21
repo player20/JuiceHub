@@ -32,59 +32,54 @@ import {
   useLocation,
   useNavigate,
 } from 'react-router-dom';
-import React, { lazy, Suspense, useContext, useEffect, useMemo, useState } from 'react';
 import { Header } from './components';
 import {
   ColorModeContext,
   ColorModeContextProvider,
 } from './contexts/color-mode';
-// Import resources synchronously (needed for menu rendering)
-import { resources as locationResources } from './pages/locations';
-import { resources as chargingStationResources } from './pages/charging-stations';
-import { resources as transactionResources } from './pages/transactions';
-import { resources as authoriationResources } from './pages/authorizations';
-import { resources as partnerResources } from './pages/partners';
-import { resources as errorLogResources } from './pages/error-logs';
-import { resources as analyticsResources } from './pages/analytics';
-import { resources as revenueResources } from './pages/revenue';
-import { resources as alertsResources } from './pages/alerts';
-import { resources as settingsResources } from './pages/settings';
-
-// Lazy load route components for code splitting (fixed import order)
-const OverviewRoutes = lazy(() =>
-  import('./pages/overview').then((m) => ({ default: m.routes })),
-);
-const LocationsRoutes = lazy(() =>
-  import('./pages/locations').then((m) => ({ default: m.routes })),
-);
-const ChargingStationsRoutes = lazy(() =>
-  import('./pages/charging-stations').then((m) => ({ default: m.routes })),
-);
-const TransactionsRoutes = lazy(() =>
-  import('./pages/transactions').then((m) => ({ default: m.routes })),
-);
-const AuthorizationsRoutes = lazy(() =>
-  import('./pages/authorizations').then((m) => ({ default: m.routes })),
-);
-const PartnersRoutes = lazy(() =>
-  import('./pages/partners').then((m) => ({ default: m.routes })),
-);
-const ErrorLogsRoutes = lazy(() =>
-  import('./pages/error-logs').then((m) => ({ default: m.routes })),
-);
-const AnalyticsRoutes = lazy(() =>
-  import('./pages/analytics').then((m) => ({ default: m.routes })),
-);
-const RevenueRoutes = lazy(() =>
-  import('./pages/revenue').then((m) => ({ default: m.routes })),
-);
-const AlertsRoutes = lazy(() =>
-  import('./pages/alerts').then((m) => ({ default: m.routes })),
-);
-const SettingsRoutes = lazy(() =>
-  import('./pages/settings').then((m) => ({ default: m.routes })),
-);
+import {
+  resources as locationResources,
+  routes as LocationsRoutes,
+} from './pages/locations';
+import {
+  resources as chargingStationResources,
+  routes as ChargingStationsRoutes,
+} from './pages/charging-stations';
+import {
+  resources as transactionResources,
+  routes as TransactionsRoutes,
+} from './pages/transactions';
+import { routes as OverviewRoutes } from './pages/overview';
+import {
+  resources as authoriationResources,
+  routes as AuthorizationsRoutes,
+} from './pages/authorizations';
+import {
+  resources as partnerResources,
+  routes as PartnersRoutes,
+} from './pages/partners';
+import {
+  resources as errorLogResources,
+  routes as ErrorLogsRoutes,
+} from './pages/error-logs';
+import {
+  resources as analyticsResources,
+  routes as AnalyticsRoutes,
+} from './pages/analytics';
+import {
+  resources as revenueResources,
+  routes as RevenueRoutes,
+} from './pages/revenue';
+import {
+  resources as alertsResources,
+  routes as AlertsRoutes,
+} from './pages/alerts';
+import {
+  resources as settingsResources,
+  routes as SettingsRoutes,
+} from './pages/settings';
 import { HelpPage } from './pages/help';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { darkTheme, lightTheme } from './theme';
 import { MainMenu, MenuSection } from './components/main-menu/main.menu';
 import {
@@ -102,24 +97,8 @@ import {
   ResourceType,
 } from '@util/auth';
 import { notificationProvider } from '@util/notificationProvider';
-import { Spin } from 'antd';
 
 import config from '@util/config';
-
-// Loading fallback component for lazy-loaded routes
-const RouteLoadingFallback: React.FC = () => (
-  <div
-    style={{
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      height: '100vh',
-      width: '100%',
-    }}
-  >
-    <Spin size="large" tip="Loading page..." />
-  </div>
-);
 
 const KEYCLOAK_URL = config.keycloakUrl;
 const KEYCLOAK_REALM = config.keycloakRealm;
@@ -329,98 +308,23 @@ const MainAntDApp: React.FC<MainAntdAppProps> = ({
             >
               <Route path="/" element={<Navigate to="/overview" replace />} />
 
-              {/* Lazy-loaded routes wrapped in Suspense for code splitting */}
-              <Route
-                index
-                path="/overview/*"
-                element={
-                  <Suspense fallback={<RouteLoadingFallback />}>
-                    <OverviewRoutes />
-                  </Suspense>
-                }
-              />
-              <Route
-                path="/locations/*"
-                element={
-                  <Suspense fallback={<RouteLoadingFallback />}>
-                    <LocationsRoutes />
-                  </Suspense>
-                }
-              />
+              <Route index path="/overview/*" element={<OverviewRoutes />} />
+              <Route path="/locations/*" element={<LocationsRoutes />} />
               <Route
                 path="/authorizations/*"
-                element={
-                  <Suspense fallback={<RouteLoadingFallback />}>
-                    <AuthorizationsRoutes />
-                  </Suspense>
-                }
+                element={<AuthorizationsRoutes />}
               />
-              <Route
-                path="/transactions/*"
-                element={
-                  <Suspense fallback={<RouteLoadingFallback />}>
-                    <TransactionsRoutes />
-                  </Suspense>
-                }
-              />
+              <Route path="/transactions/*" element={<TransactionsRoutes />} />
               <Route
                 path="/charging-stations/*"
-                element={
-                  <Suspense fallback={<RouteLoadingFallback />}>
-                    <ChargingStationsRoutes />
-                  </Suspense>
-                }
+                element={<ChargingStationsRoutes />}
               />
-              <Route
-                path="/partners/*"
-                element={
-                  <Suspense fallback={<RouteLoadingFallback />}>
-                    <PartnersRoutes />
-                  </Suspense>
-                }
-              />
-              <Route
-                path="/error-logs/*"
-                element={
-                  <Suspense fallback={<RouteLoadingFallback />}>
-                    <ErrorLogsRoutes />
-                  </Suspense>
-                }
-              />
-              <Route
-                path="/analytics/*"
-                element={
-                  <Suspense fallback={<RouteLoadingFallback />}>
-                    <AnalyticsRoutes />
-                  </Suspense>
-                }
-              />
-              <Route
-                path="/revenue/*"
-                element={
-                  <Suspense fallback={<RouteLoadingFallback />}>
-                    <RevenueRoutes />
-                  </Suspense>
-                }
-              />
-              <Route
-                path="/alerts/*"
-                element={
-                  <Suspense fallback={<RouteLoadingFallback />}>
-                    <AlertsRoutes />
-                  </Suspense>
-                }
-              />
-              <Route
-                path="/settings/*"
-                element={
-                  <Suspense fallback={<RouteLoadingFallback />}>
-                    <SettingsRoutes />
-                  </Suspense>
-                }
-              />
-
-              {/* Non-lazy routes */}
+              <Route path="/partners/*" element={<PartnersRoutes />} />
+              <Route path="/error-logs/*" element={<ErrorLogsRoutes />} />
+              <Route path="/analytics/*" element={<AnalyticsRoutes />} />
+              <Route path="/revenue/*" element={<RevenueRoutes />} />
+              <Route path="/alerts/*" element={<AlertsRoutes />} />
+              <Route path="/settings/*" element={<SettingsRoutes />} />
               <Route path="/help" element={<HelpPage />} />
               <Route path="*" element={<ErrorComponent />} />
             </Route>
