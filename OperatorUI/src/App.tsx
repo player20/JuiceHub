@@ -32,6 +32,7 @@ import {
   useLocation,
   useNavigate,
 } from 'react-router-dom';
+import React, { lazy, Suspense, useContext, useEffect, useMemo, useState } from 'react';
 import { Header } from './components';
 import {
   ColorModeContext,
@@ -84,7 +85,6 @@ const SettingsRoutes = lazy(() =>
   import('./pages/settings').then((m) => ({ default: m.routes })),
 );
 import { HelpPage } from './pages/help';
-import React, { lazy, Suspense, useContext, useEffect, useMemo, useState } from 'react';
 import { darkTheme, lightTheme } from './theme';
 import { MainMenu, MenuSection } from './components/main-menu/main.menu';
 import {
