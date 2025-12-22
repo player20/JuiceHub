@@ -119,6 +119,13 @@ const requestMiddleware = async (request: any) => {
   const requestHeaders = {
     ...request.headers,
   };
+
+  // Add Hasura admin secret for development/testing
+  // TODO: Remove this in production and use proper role-based permissions
+  if (config.hasuraAdminSecret) {
+    requestHeaders['x-hasura-admin-secret'] = config.hasuraAdminSecret;
+  }
+
   if (authProvider) {
     const token = await authProvider.getToken();
     if (token) {
@@ -148,25 +155,26 @@ const client = new GraphQLClient(API_URL, {
 const webSocketClient = graphqlWS.createClient({
   url: WS_URL,
   connectionParams: async () => {
+    const headers: Record<string, string> = {};
+
+    // Add Hasura admin secret for development/testing
+    if (config.hasuraAdminSecret) {
+      headers['x-hasura-admin-secret'] = config.hasuraAdminSecret;
+    }
+
     const token = await authProvider.getToken();
     if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+
       const hasuraHeaders = await authProvider.getHasuraHeaders();
       if (hasuraHeaders) {
         const hasuraRole = hasuraHeaders.get(HasuraHeader.X_HASURA_ROLE);
-        if (hasuraRole)
-          // If a role is set, include it in the connection params
-          return {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              [HasuraHeader.X_HASURA_ROLE]: hasuraRole,
-            },
-          };
+        if (hasuraRole) {
+          headers[HasuraHeader.X_HASURA_ROLE] = hasuraRole;
+        }
       }
-      return {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      };
+
+      return { headers };
     }
   },
 });
