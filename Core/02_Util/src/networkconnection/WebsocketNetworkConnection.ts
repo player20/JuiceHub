@@ -45,6 +45,7 @@ export class WebsocketNetworkConnection {
     authenticator: IAuthenticator,
     router: IMessageRouter,
     logger?: Logger<ILogObj>,
+    sharedHttpServer?: http.Server | https.Server,
   ) {
     this._cache = cache;
     this._config = config;
@@ -57,20 +58,31 @@ export class WebsocketNetworkConnection {
 
     this._httpServersMap = new Map<string, http.Server | https.Server>();
     this._config.util.networkConnection.websocketServers.forEach((websocketServerConfig) => {
-      let _httpServer;
-      switch (websocketServerConfig.securityProfile) {
-        case 3: // mTLS
-        case 2: // TLS
-          _httpServer = https.createServer(
-            this._generateServerOptions(websocketServerConfig),
-            this._onHttpRequest.bind(this),
-          );
-          break;
-        case 1:
-        case 0:
-        default: // No TLS
-          _httpServer = http.createServer(this._onHttpRequest.bind(this));
-          break;
+      let _httpServer: http.Server | https.Server;
+
+      // Use shared HTTP server if provided (for production deployments like Render)
+      // Otherwise create dedicated HTTP servers (for local development)
+      if (sharedHttpServer) {
+        _httpServer = sharedHttpServer;
+        this._logger.info(
+          `Using shared HTTP server for OCPP WebSocket (security profile ${websocketServerConfig.securityProfile})`,
+        );
+      } else {
+        // Create dedicated HTTP server for this security profile
+        switch (websocketServerConfig.securityProfile) {
+          case 3: // mTLS
+          case 2: // TLS
+            _httpServer = https.createServer(
+              this._generateServerOptions(websocketServerConfig),
+              this._onHttpRequest.bind(this),
+            );
+            break;
+          case 1:
+          case 0:
+          default: // No TLS
+            _httpServer = http.createServer(this._onHttpRequest.bind(this));
+            break;
+        }
       }
 
       // TODO: stop using handleProtocols and switch to shouldHandle or verifyClient; see https://github.com/websockets/ws/issues/1552
@@ -93,12 +105,17 @@ export class WebsocketNetworkConnection {
       _httpServer.on('error', (error) => _socketServer.emit('error', error));
       // socketServer.close() will not do anything; use httpServer.close()
       _httpServer.on('close', () => _socketServer.emit('close'));
-      const protocol = websocketServerConfig.securityProfile > 1 ? 'wss' : 'ws';
-      _httpServer.listen(websocketServerConfig.port, websocketServerConfig.host, () => {
-        this._logger.info(
-          `WebsocketServer running on ${protocol}://${websocketServerConfig.host}:${websocketServerConfig.port}/`,
-        );
-      });
+
+      // Only listen on dedicated servers (not shared servers)
+      if (!sharedHttpServer) {
+        const protocol = websocketServerConfig.securityProfile > 1 ? 'wss' : 'ws';
+        _httpServer.listen(websocketServerConfig.port, websocketServerConfig.host, () => {
+          this._logger.info(
+            `WebsocketServer running on ${protocol}://${websocketServerConfig.host}:${websocketServerConfig.port}/`,
+          );
+        });
+      }
+
       this._httpServersMap.set(websocketServerConfig.id, _httpServer);
     });
   }
