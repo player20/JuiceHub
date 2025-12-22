@@ -104,12 +104,12 @@ export const HelpPage: React.FC = () => {
           </Paragraph>
 
           <ConnectionURL
-            url="ws://localhost:8081"
+            url="ws://juicehub-core.onrender.com/ocpp"
             label="Universal Endpoint (Security Profile 0 - No TLS)"
             protocol="auto"
           />
           <ConnectionURL
-            url="wss://localhost:8082"
+            url="wss://juicehub-core.onrender.com/ocpp"
             label="Universal Secure Endpoint (Security Profile 2 - TLS + Client Certificate)"
             protocol="auto"
           />

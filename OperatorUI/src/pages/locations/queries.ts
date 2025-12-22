@@ -116,11 +116,10 @@ export const LOCATIONS_GET_QUERY = gql`
         protocol
         createdAt
         updatedAt
-        Evses: VariableAttributes(
-          distinct_on: evseDatabaseId
-          where: { evseDatabaseId: { _is_null: false } }
-        ) {
+        evses: Evses {
           id
+          evseId
+          evseTypeId
           createdAt
           updatedAt
         }
