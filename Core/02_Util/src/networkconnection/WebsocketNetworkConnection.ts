@@ -99,9 +99,25 @@ export class WebsocketNetworkConnection {
       _socketServer.on('error', (wss: WebSocketServer, error: Error) => this._onError(wss, error));
       _socketServer.on('close', (wss: WebSocketServer) => this._onClose(wss));
 
-      _httpServer.on('upgrade', (request, socket, head) =>
-        this._upgradeRequest(request, socket, head, _socketServer, websocketServerConfig),
-      );
+      _httpServer.on('upgrade', (request, socket, head) => {
+        // When using shared HTTP server, check if the requested protocol matches this server's protocol
+        if (sharedHttpServer) {
+          const requestedProtocol = request.headers['sec-websocket-protocol'];
+          const serverProtocol = websocketServerConfig.protocol;
+
+          // Parse requested protocols from header
+          const protocols = requestedProtocol ? requestedProtocol.split(',').map(p => p.trim()) : [];
+          const matches = protocols.includes(serverProtocol);
+
+          if (!matches) {
+            // Protocol doesn't match, let another handler process this request
+            return;
+          }
+        }
+
+        // Protocol matches or not using shared server - process the upgrade request
+        this._upgradeRequest(request, socket, head, _socketServer, websocketServerConfig);
+      });
       _httpServer.on('error', (error) => _socketServer.emit('error', error));
       // socketServer.close() will not do anything; use httpServer.close()
       _httpServer.on('close', () => _socketServer.emit('close'));
