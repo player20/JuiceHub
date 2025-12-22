@@ -430,6 +430,7 @@ export class CitrineOSServer {
       this._logger,
       this._server.server, // Pass Fastify's underlying HTTP server for shared WebSocket support
     );
+    this._logger.info('✅ WebSocket network connection initialized with shared Fastify server');
 
     this.apis.push(new AdminApi(router, this._server, this._logger));
 
