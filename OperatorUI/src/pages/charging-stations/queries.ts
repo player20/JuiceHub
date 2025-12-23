@@ -21,6 +21,9 @@ export const CHARGING_STATIONS_LIST_QUERY = gql`
       isOnline
       protocol
       locationId
+      chargePointVendor
+      chargePointModel
+      firmwareVersion
       createdAt
       updatedAt
       location: Location {
@@ -112,6 +115,9 @@ export const FAULTED_CHARGING_STATIONS_LIST_QUERY = gql`
       isOnline
       protocol
       locationId
+      chargePointVendor
+      chargePointModel
+      firmwareVersion
       createdAt
       updatedAt
       location: Location {
@@ -172,6 +178,7 @@ export const CHARGING_STATIONS_GET_QUERY = gql`
       locationId
       chargePointVendor
       chargePointModel
+      firmwareVersion
       createdAt
       updatedAt
       floorLevel
