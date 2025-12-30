@@ -13,6 +13,7 @@ build/
 **/build/
 out/
 *.tsbuildinfo
+**/bundle-analysis.html
 
 # Environment variables
 .env
@@ -93,3 +94,38 @@ docs/.vitepress/cache
 
 # Production checklist (keep in repo)
 !PRODUCTION_READY_CHECKLIST.md
+
+# Documentation - Keep detailed guides local, push only essentials to GitHub
+# Essential docs (pushed to GitHub):
+!README.md
+!DEVELOPER_GUIDE.md
+!JUICENET_APP_API_GUIDE.md
+
+# Detailed reference guides (local only - not pushed to GitHub):
+ERROR_HANDLING_GUIDE.md
+SECURITY_CONTROLS.md
+TROUBLESHOOTING_GUIDE.md
+README_FOR_DEV_TEAM.md
+WHAT_WE_BUILT_TODAY.md
+PERFORMANCE_OPTIMIZATION_GUIDE.md
+CONNECTION_MONITORING_GUIDE.md
+DATABASE_INDEX_GUIDE.md
+GRAPHQL_OPTIMIZATION_GUIDE.md
+CHARGER_CONFIGURATION_GUIDE.md
+OPTIMIZATION_IMPLEMENTATION_PLAN.md
+
+# Old deployment/audit docs (local only):
+COMPREHENSIVE_PRODUCTION_AUDIT.md
+COMPREHENSIVE_SYSTEM_AUDIT.md
+DEPLOYMENT.md
+DEPLOYMENT_CHECKLIST.md
+DEPLOYMENT_GUIDE.md
+DEPLOYMENT_TEST_RESULTS.md
+ENV_VARS_CHECKLIST.md
+GITHUB_SETUP.md
+HASURA_DEPLOYMENT_GUIDE.md
+OPERATORUI_DEPLOYMENT_GUIDE.md
+PRODUCTION_FIXES.md
+PRODUCTION_READINESS_REPORT.md
+RENDER_DEPLOYMENT.md
+SECURITY_SETUP.md
