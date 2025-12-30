@@ -51,8 +51,8 @@ export const StationPerformance: React.FC = () => {
     meta: {
       operation: 'GetStationPerformance',
       variables: {
-        startDate: { value: startDate, type: 'date', required: true },
-        endDate: { value: endDate, type: 'date', required: true },
+        startDate: startDate,
+        endDate: endDate,
       },
       gqlQuery: GET_STATION_PERFORMANCE,
     },

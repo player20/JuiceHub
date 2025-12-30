@@ -23,7 +23,7 @@ export const EnergyTrendCard: React.FC = () => {
     meta: {
       operation: 'GetTodayStats',
       variables: {
-        today: { value: today, type: 'date', required: true },
+        today: today,
       },
       gqlQuery: GET_TODAY_STATS,
     },

@@ -25,8 +25,8 @@ export const UsageChartCard: React.FC = () => {
     meta: {
       operation: 'GetUsageSnapshots',
       variables: {
-        startDate: { value: startDate, type: 'date', required: true },
-        endDate: { value: endDate, type: 'date', required: true },
+        startDate: startDate,
+        endDate: endDate,
       },
       gqlQuery: GET_USAGE_SNAPSHOTS,
     },
