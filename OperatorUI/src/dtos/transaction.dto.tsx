@@ -46,5 +46,7 @@ export class TransactionDto implements Partial<ITransactionDto> {
   tariff?: ITariffDto | null;
   startTime?: string | null;
   endTime?: string | null;
+  meterStart?: number; // Meter reading at session start (in Wh)
+  meterStop?: number; // Meter reading at session end (in Wh)
   customData?: any | null;
 }

@@ -150,16 +150,16 @@ export const ChargingStationLiveStats: FC<ConnectorStatsProps> = ({ stationId })
         const soc = parsedValues.find((v) => v.measurand === 'SoC');
         const temperature = parsedValues.find((v) => v.measurand.includes('Temperature'));
 
-        // Use transaction's meterStart from StartTransaction record
+        // Use transaction's meterStart field (captured during StartTransaction)
         // This is the actual meter reading when the session began (in Wh)
-        const meterStart = (tx as any).startTransaction?.meterStart || 0;
+        const meterStart = (tx as any).meterStart || 0;
 
         // Calculate session-specific energy (current meter reading - starting meter reading)
         const currentMeterReading = energyRaw ? energyRaw.value : 0;
         const sessionEnergyWh = currentMeterReading - meterStart;
         const sessionEnergyKwh = sessionEnergyWh / 1000;
 
-        // Use transaction's actual start time from the Transaction record
+        // Use transaction's actual start time
         const sessionStartTime = (tx as any).startTime;
         const sessionAge = sessionStartTime ? dayjs().diff(dayjs(sessionStartTime), 'seconds') : 0;
 

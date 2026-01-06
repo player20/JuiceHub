@@ -235,13 +235,11 @@ export const GET_TRANSACTION_LIST_FOR_STATION = gql`
       totalKwh
       startTime
       endTime
+      meterStart
+      meterStop
       connectorId
       createdAt
       updatedAt
-      StartTransaction {
-        meterStart
-        timestamp
-      }
       TransactionEvents(where: { eventType: { _eq: "Started" } }) {
         eventType
         idTokenValue

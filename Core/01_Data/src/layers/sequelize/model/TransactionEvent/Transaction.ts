@@ -134,6 +134,12 @@ export class Transaction extends BaseModelWithTenant implements ITransactionDto 
   })
   declare endTime?: string;
 
+  @Column(DataType.INTEGER)
+  declare meterStart?: number; // Meter reading at session start (in Wh)
+
+  @Column(DataType.INTEGER)
+  declare meterStop?: number; // Meter reading at session end (in Wh)
+
   @Column(DataType.JSONB)
   declare customData?: any | null;
 }

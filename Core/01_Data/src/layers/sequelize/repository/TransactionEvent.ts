@@ -694,6 +694,7 @@ export class SequelizeTransactionEventRepository
         transactionId: transactionId.toString(),
         authorizationId: authorization ? authorization.id : null,
         startTime: request.timestamp,
+        meterStart: request.meterStart, // Capture meter reading at session start (in Wh)
       });
 
       const chargingStation = await this.station.readByKey(tenantId, stationId);
@@ -758,6 +759,7 @@ export class SequelizeTransactionEventRepository
 
     await transaction.update({
       endTime: timestamp,
+      meterStop, // Capture meter reading at session end (in Wh)
       isActive: false,
     });
 

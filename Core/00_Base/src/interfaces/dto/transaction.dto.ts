@@ -44,6 +44,8 @@ export interface ITransactionDto extends IBaseDto {
   tariff?: ITariffDto | null;
   startTime?: string | null;
   endTime?: string | null;
+  meterStart?: number; // Meter reading at session start (in Wh)
+  meterStop?: number; // Meter reading at session end (in Wh)
   customData?: any | null;
 }
 
@@ -76,5 +78,7 @@ export enum TransactionDtoProps {
   tariffId = 'tariffId',
   startTime = 'startTime',
   endTime = 'endTime',
+  meterStart = 'meterStart',
+  meterStop = 'meterStop',
   customData = 'customData',
 }
