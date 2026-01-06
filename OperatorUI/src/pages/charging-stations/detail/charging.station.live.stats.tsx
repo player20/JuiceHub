@@ -138,10 +138,18 @@ export const ChargingStationLiveStats: FC<ConnectorStatsProps> = ({ stationId })
           (mv) => mv.transactionDatabaseId === tx.id
         );
 
-        const latestMv = txMeterValues[0];
-        const parsedValues = latestMv ? parseSampledValues(latestMv.sampledValue as any[]) : [];
+        // Sort meter values by timestamp (oldest first)
+        const sortedMeterValues = [...txMeterValues].sort((a, b) =>
+          new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+        );
 
-        // Extract specific measurands
+        const latestMv = sortedMeterValues[sortedMeterValues.length - 1];
+        const firstMv = sortedMeterValues[0];
+
+        const parsedValues = latestMv ? parseSampledValues(latestMv.sampledValue as any[]) : [];
+        const firstParsedValues = firstMv ? parseSampledValues(firstMv.sampledValue as any[]) : [];
+
+        // Extract specific measurands from latest reading
         const energyRaw = parsedValues.find((v) => v.measurand.includes('Energy.Active.Import'));
         const power = parsedValues.find((v) => v.measurand.includes('Power.Active.Import'));
         const voltage = parsedValues.find((v) => v.measurand.includes('Voltage'));
@@ -149,14 +157,17 @@ export const ChargingStationLiveStats: FC<ConnectorStatsProps> = ({ stationId })
         const soc = parsedValues.find((v) => v.measurand === 'SoC');
         const temperature = parsedValues.find((v) => v.measurand.includes('Temperature'));
 
+        // Get first energy reading from meter values or transaction meterStart
+        const firstEnergyReading = firstParsedValues.find((v) => v.measurand.includes('Energy.Active.Import'));
+        const meterStart = tx.meterStart || (firstEnergyReading ? firstEnergyReading.value : 0);
+
         // Calculate session-specific energy (current meter reading - starting meter reading)
-        const meterStart = tx.meterStart || 0;
         const currentMeterReading = energyRaw ? energyRaw.value : 0;
         const sessionEnergyWh = currentMeterReading - meterStart;
         const sessionEnergyKwh = sessionEnergyWh / 1000;
 
-        // Calculate session duration
-        const sessionStartTime = tx.startTime || (txMeterValues.length > 0 ? txMeterValues[txMeterValues.length - 1].timestamp : null);
+        // Calculate session duration (use transaction startTime or first meter value timestamp)
+        const sessionStartTime = tx.startTime || (firstMv ? firstMv.timestamp : null);
         const sessionAge = sessionStartTime ? dayjs().diff(dayjs(sessionStartTime), 'seconds') : 0;
 
         return (
