@@ -62,7 +62,7 @@ export const ChargingStationDetailCardContent = ({
   const pageLocation = useLocation();
   const dispatch = useDispatch();
 
-  const { data, isLoading } = useOne<IChargingStationDto>({
+  const { data, isLoading, refetch } = useOne<IChargingStationDto>({
     resource: ResourceType.CHARGING_STATIONS,
     id: stationId,
     meta: {
@@ -138,11 +138,12 @@ export const ChargingStationDetailCardContent = ({
           modalComponentType: ModalComponentType.remoteStop,
           modalComponentProps: {
             station: instanceToPlain(station),
+            onSuccess: () => refetch(),
           },
         }),
       );
     },
-    [dispatch],
+    [dispatch, refetch],
   );
 
   const showResetStartModal = useCallback(

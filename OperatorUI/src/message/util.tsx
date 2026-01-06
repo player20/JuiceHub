@@ -39,6 +39,7 @@ export interface TriggerMessageAndHandleResponseProps<T> {
   ocppVersion?: OCPPVersion | null;
   method?: HttpMethod;
   setLoading?: (loading: boolean) => void;
+  onSuccess?: () => void;
 }
 
 type MessageConfirmationOrArray = MessageConfirmation | MessageConfirmation[];
@@ -51,6 +52,7 @@ export const triggerMessageAndHandleResponse = async <
   ocppVersion = OCPPVersion.OCPP2_0_1,
   method = HttpMethod.Post,
   setLoading,
+  onSuccess,
 }: TriggerMessageAndHandleResponseProps<T>) => {
   try {
     setLoading?.(true);
@@ -77,6 +79,7 @@ export const triggerMessageAndHandleResponse = async <
         : response.data.payload;
 
       showSuccess(payload);
+      onSuccess?.();
     } else {
       let msg = 'The request did not receive a successful response.';
       if (response instanceof MessageConfirmation || Array.isArray(response)) {

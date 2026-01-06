@@ -13,8 +13,12 @@ import { IChargingStationDto } from '@citrineos/base';
 
 export interface OCPP1_6_RemoteStopProps {
   station: IChargingStationDto;
+  onSuccess?: () => void;
 }
-export const OCPP1_6_RemoteStop = ({ station }: OCPP1_6_RemoteStopProps) => {
+export const OCPP1_6_RemoteStop = ({
+  station,
+  onSuccess,
+}: OCPP1_6_RemoteStopProps) => {
   const [form] = Form.useForm();
   const dispatch = useDispatch();
   const [loading, setLoading] = useState<boolean>(false);
@@ -28,6 +32,7 @@ export const OCPP1_6_RemoteStop = ({ station }: OCPP1_6_RemoteStopProps) => {
       data,
       ocppVersion: OCPPVersion.OCPP1_6,
       setLoading,
+      onSuccess,
     });
   };
 

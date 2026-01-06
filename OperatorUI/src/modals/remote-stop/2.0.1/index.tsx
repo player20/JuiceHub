@@ -14,10 +14,12 @@ import { IEvseDto } from '@citrineos/base';
 
 export interface OCPP2_0_1_RemoteStopProps {
   station: IChargingStationDto;
+  onSuccess?: () => void;
 }
 
 export const OCPP2_0_1_RemoteStop = ({
   station,
+  onSuccess,
 }: OCPP2_0_1_RemoteStopProps) => {
   const evseMap: Map<number, IEvseDto> = useMemo(() => {
     if (!station.evses) return new Map<number, IEvseDto>();
@@ -37,6 +39,7 @@ export const OCPP2_0_1_RemoteStop = ({
       data,
       ocppVersion: OCPPVersion.OCPP2_0_1,
       setLoading,
+      onSuccess,
     });
   };
 
