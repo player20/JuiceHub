@@ -169,6 +169,11 @@ export class TransactionService {
     context: IMessageContext,
     idToken: string,
   ): Promise<OCPP1_6.StartTransactionResponse> {
+    // Log every authorization attempt for debugging
+    this._logger.info(
+      `[DEBUG] authorizeOcpp16IdToken called: stationId=${context.stationId}, idToken="${idToken}", typeof=${typeof idToken}`,
+    );
+
     // Special handling for NoAuthorization tokens (matches OCPP 2.0.1 behavior)
     if (idToken === 'NoAuthorization') {
       this._logger.info(
