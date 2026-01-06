@@ -150,17 +150,17 @@ export const ChargingStationLiveStats: FC<ConnectorStatsProps> = ({ stationId })
         const soc = parsedValues.find((v) => v.measurand === 'SoC');
         const temperature = parsedValues.find((v) => v.measurand.includes('Temperature'));
 
-        // Use transaction's meterStart (set during StartTransaction)
-        // This is the actual meter reading when the session began
-        const meterStart = tx.meterStart || 0;
+        // Use transaction's meterStart from StartTransaction record
+        // This is the actual meter reading when the session began (in Wh)
+        const meterStart = (tx as any).startTransaction?.meterStart || 0;
 
         // Calculate session-specific energy (current meter reading - starting meter reading)
         const currentMeterReading = energyRaw ? energyRaw.value : 0;
         const sessionEnergyWh = currentMeterReading - meterStart;
         const sessionEnergyKwh = sessionEnergyWh / 1000;
 
-        // Use transaction's actual start time (set during StartTransaction)
-        const sessionStartTime = tx.startTime;
+        // Use transaction's actual start time from the Transaction record
+        const sessionStartTime = (tx as any).startTime;
         const sessionAge = sessionStartTime ? dayjs().diff(dayjs(sessionStartTime), 'seconds') : 0;
 
         return (
@@ -240,7 +240,7 @@ export const ChargingStationLiveStats: FC<ConnectorStatsProps> = ({ stationId })
               </Descriptions.Item>
 
               <Descriptions.Item label="Authorization">
-                <Tag>{tx.authorization?.idToken || 'auto-host-charging'}</Tag>
+                <Tag>{(tx as any).authorization?.idToken || 'NoAuthorization'}</Tag>
               </Descriptions.Item>
 
               <Descriptions.Item label="Charging State">

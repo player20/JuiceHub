@@ -233,11 +233,23 @@ export const GET_TRANSACTION_LIST_FOR_STATION = gql`
       evseId
       remoteStartId
       totalKwh
+      startTime
+      endTime
+      connectorId
       createdAt
       updatedAt
+      StartTransaction {
+        meterStart
+        timestamp
+      }
       TransactionEvents(where: { eventType: { _eq: "Started" } }) {
         eventType
         idTokenValue
+        idTokenType
+      }
+      Authorization {
+        id
+        idToken
         idTokenType
       }
       ChargingStation {
