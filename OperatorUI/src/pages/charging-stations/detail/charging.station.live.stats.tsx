@@ -142,15 +142,22 @@ export const ChargingStationLiveStats: FC<ConnectorStatsProps> = ({ stationId })
         const parsedValues = latestMv ? parseSampledValues(latestMv.sampledValue as any[]) : [];
 
         // Extract specific measurands
-        const energy = parsedValues.find((v) => v.measurand.includes('Energy.Active.Import'));
+        const energyRaw = parsedValues.find((v) => v.measurand.includes('Energy.Active.Import'));
         const power = parsedValues.find((v) => v.measurand.includes('Power.Active.Import'));
         const voltage = parsedValues.find((v) => v.measurand.includes('Voltage'));
         const current = parsedValues.find((v) => v.measurand.includes('Current.Import'));
         const soc = parsedValues.find((v) => v.measurand === 'SoC');
         const temperature = parsedValues.find((v) => v.measurand.includes('Temperature'));
 
-        const chargingDuration = tx.timeSpentCharging || 0;
-        const sessionAge = tx.startTime ? dayjs().diff(dayjs(tx.startTime), 'seconds') : 0;
+        // Calculate session-specific energy (current meter reading - starting meter reading)
+        const meterStart = tx.meterStart || 0;
+        const currentMeterReading = energyRaw ? energyRaw.value : 0;
+        const sessionEnergyWh = currentMeterReading - meterStart;
+        const sessionEnergyKwh = sessionEnergyWh / 1000;
+
+        // Calculate session duration
+        const sessionStartTime = tx.startTime || (txMeterValues.length > 0 ? txMeterValues[txMeterValues.length - 1].timestamp : null);
+        const sessionAge = sessionStartTime ? dayjs().diff(dayjs(sessionStartTime), 'seconds') : 0;
 
         return (
           <Card
@@ -177,7 +184,7 @@ export const ChargingStationLiveStats: FC<ConnectorStatsProps> = ({ stationId })
               <Col xs={24} sm={12} md={6}>
                 <Statistic
                   title="Energy Delivered"
-                  value={energy ? (energy.value / 1000).toFixed(2) : tx.totalKwh?.toFixed(2) || '0.00'}
+                  value={sessionEnergyKwh.toFixed(2)}
                   suffix="kWh"
                   prefix={<ThunderboltOutlined />}
                   valueStyle={{ color: '#3f8600' }}
@@ -225,7 +232,7 @@ export const ChargingStationLiveStats: FC<ConnectorStatsProps> = ({ stationId })
               size="small"
             >
               <Descriptions.Item label="Session Start">
-                {tx.startTime ? dayjs(tx.startTime).format('MMM D, YYYY HH:mm:ss') : 'N/A'}
+                {sessionStartTime ? dayjs(sessionStartTime).format('MMM D, YYYY HH:mm:ss') : 'N/A'}
               </Descriptions.Item>
 
               <Descriptions.Item label="Authorization">
@@ -256,10 +263,10 @@ export const ChargingStationLiveStats: FC<ConnectorStatsProps> = ({ stationId })
                 </Descriptions.Item>
               )}
 
-              {power && energy && (
+              {power && energyRaw && (
                 <Descriptions.Item label="Avg Power">
                   {sessionAge > 0
-                    ? ((energy.value / 1000) / (sessionAge / 3600)).toFixed(2)
+                    ? (sessionEnergyKwh / (sessionAge / 3600)).toFixed(2)
                     : '0.00'}{' '}
                   kW
                 </Descriptions.Item>
@@ -300,8 +307,8 @@ export const ChargingStationLiveStats: FC<ConnectorStatsProps> = ({ stationId })
               </>
             )}
 
-            {/* Cost Calculation (if you want to add this) */}
-            {energy && (
+            {/* Cost Calculation */}
+            {energyRaw && (
               <>
                 <Divider />
                 <Row gutter={16}>
@@ -309,7 +316,7 @@ export const ChargingStationLiveStats: FC<ConnectorStatsProps> = ({ stationId })
                     <Card size="small" style={{ background: '#f0f5ff' }}>
                       <Statistic
                         title="Estimated Cost (@ $0.30/kWh)"
-                        value={((energy.value / 1000) * 0.30).toFixed(2)}
+                        value={(sessionEnergyKwh * 0.30).toFixed(2)}
                         prefix="$"
                         precision={2}
                       />
@@ -319,7 +326,7 @@ export const ChargingStationLiveStats: FC<ConnectorStatsProps> = ({ stationId })
                     <Card size="small" style={{ background: '#f6ffed' }}>
                       <Statistic
                         title="CO₂ Avoided (vs. Gas)"
-                        value={((energy.value / 1000) * 0.4).toFixed(2)}
+                        value={(sessionEnergyKwh * 0.4).toFixed(2)}
                         suffix="kg"
                         valueStyle={{ color: '#52c41a' }}
                       />
