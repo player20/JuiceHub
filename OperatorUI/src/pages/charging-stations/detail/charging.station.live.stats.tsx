@@ -74,16 +74,16 @@ export const ChargingStationLiveStats: FC<ConnectorStatsProps> = ({ stationId })
   const activeTxs = txData?.data || [];
   const txIds = activeTxs.map((tx) => tx.id);
 
-  // Get latest meter values for active transactions
+  // Get ALL meter values for active transactions (ordered chronologically)
   const { data: mvData, isLoading: mvLoading, refetch: refetchMv } = useList<IMeterValueDto>({
     resource: ResourceType.METER_VALUES,
     meta: {
       gqlQuery: GET_METER_VALUES_FOR_STATION,
       gqlVariables: {
         transactionDatabaseIds: txIds,
-        limit: 20,
+        limit: 1000, // Fetch all meter values for accurate session calculation
         offset: 0,
-        order_by: { timestamp: 'desc' },
+        order_by: { timestamp: 'asc' }, // Chronological order
       },
     },
     queryOptions: {
@@ -92,7 +92,7 @@ export const ChargingStationLiveStats: FC<ConnectorStatsProps> = ({ stationId })
     },
   });
 
-  const latestMeterValues = mvData?.data || [];
+  const allMeterValues = mvData?.data || [];
 
   // Auto-refresh every 10 seconds
   useEffect(() => {
@@ -134,12 +134,16 @@ export const ChargingStationLiveStats: FC<ConnectorStatsProps> = ({ stationId })
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       {activeTxs.map((tx) => {
-        const txMeterValues = latestMeterValues.filter(
+        // Get all meter values for this transaction (sorted chronologically)
+        const txMeterValues = allMeterValues.filter(
           (mv) => mv.transactionDatabaseId === tx.id
         );
 
-        // Get latest meter value (array is already sorted desc)
-        const latestMv = txMeterValues[0];
+        // Get first and latest meter values
+        const firstMv = txMeterValues[0]; // First reading (session start)
+        const latestMv = txMeterValues[txMeterValues.length - 1]; // Latest reading (current)
+
+        // Parse latest meter value for current stats
         const parsedValues = latestMv ? parseSampledValues(latestMv.sampledValue as any[]) : [];
 
         // Extract specific measurands from latest reading
@@ -150,11 +154,12 @@ export const ChargingStationLiveStats: FC<ConnectorStatsProps> = ({ stationId })
         const soc = parsedValues.find((v) => v.measurand === 'SoC');
         const temperature = parsedValues.find((v) => v.measurand.includes('Temperature'));
 
-        // Use transaction's meterStart field (captured during StartTransaction)
-        // This is the actual meter reading when the session began (in Wh)
-        const meterStart = (tx as any).meterStart || 0;
+        // Get session start energy from FIRST meter value
+        const firstParsedValues = firstMv ? parseSampledValues(firstMv.sampledValue as any[]) : [];
+        const firstEnergyRaw = firstParsedValues.find((v) => v.measurand.includes('Energy.Active.Import'));
+        const meterStart = firstEnergyRaw ? firstEnergyRaw.value : 0;
 
-        // Calculate session-specific energy (current meter reading - starting meter reading)
+        // Calculate session-specific energy (current meter reading - first meter reading)
         const currentMeterReading = energyRaw ? energyRaw.value : 0;
         const sessionEnergyWh = currentMeterReading - meterStart;
         const sessionEnergyKwh = sessionEnergyWh / 1000;
