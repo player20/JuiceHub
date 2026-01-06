@@ -24,13 +24,13 @@ export const UsageChartCard: React.FC = () => {
     method: 'post',
     meta: {
       operation: 'GetUsageSnapshots',
-      variables: {
+      gqlVariables: {
         startDate: startDate,
         endDate: endDate,
       },
       gqlQuery: GET_USAGE_SNAPSHOTS,
     },
-  } as any);
+  });
 
   // Transform data for chart
   const chartData: UsageTrendDataPoint[] =
