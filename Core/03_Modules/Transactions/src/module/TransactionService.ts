@@ -169,6 +169,19 @@ export class TransactionService {
     context: IMessageContext,
     idToken: string,
   ): Promise<OCPP1_6.StartTransactionResponse> {
+    // Special handling for NoAuthorization tokens (matches OCPP 2.0.1 behavior)
+    if (idToken === 'NoAuthorization') {
+      this._logger.info(
+        `Auto-accepting NoAuthorization token for station ${context.stationId}`,
+      );
+      return {
+        idTagInfo: {
+          status: OCPP1_6.StartTransactionResponseStatus.Accepted,
+        },
+        transactionId: 0, // Will be assigned during transaction creation
+      };
+    }
+
     const response: OCPP1_6.StartTransactionResponse = {
       idTagInfo: {
         status: OCPP1_6.StartTransactionResponseStatus.Invalid,
