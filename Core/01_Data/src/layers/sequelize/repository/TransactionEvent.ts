@@ -694,6 +694,7 @@ export class SequelizeTransactionEventRepository
         transactionId: transactionId.toString(),
         authorizationId: authorization ? authorization.id : null,
         startTime: request.timestamp,
+        meterStart: request.meterStart,
       });
 
       const chargingStation = await this.station.readByKey(tenantId, stationId);
