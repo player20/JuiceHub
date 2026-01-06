@@ -318,7 +318,7 @@ export const ChargingStationLiveStats: FC<ConnectorStatsProps> = ({ stationId })
               </>
             )}
 
-            {/* Cost Calculation */}
+            {/* Cost and Environmental Impact */}
             {energyRaw && (
               <>
                 <Divider />
@@ -336,8 +336,22 @@ export const ChargingStationLiveStats: FC<ConnectorStatsProps> = ({ stationId })
                   <Col xs={24} sm={12}>
                     <Card size="small" style={{ background: '#f6ffed' }}>
                       <Statistic
-                        title="CO₂ Avoided (vs. Gas)"
-                        value={(sessionEnergyKwh * 0.4).toFixed(2)}
+                        title="CO₂ Avoided (vs. 25 mpg Gas Car)"
+                        value={(() => {
+                          // EV efficiency: ~3.5 miles/kWh (typical for modern EVs)
+                          const milesPerKwh = 3.5;
+                          const milesDriven = sessionEnergyKwh * milesPerKwh;
+
+                          // Gas vehicle: 25 mpg average, 8.89 kg CO2 per gallon
+                          const gasolineEmissions = (milesDriven / 25) * 8.89;
+
+                          // Grid emissions: ~0.5 kg CO2/kWh (US average)
+                          const evEmissions = sessionEnergyKwh * 0.5;
+
+                          // Net CO2 savings
+                          const co2Savings = gasolineEmissions - evEmissions;
+                          return co2Savings.toFixed(2);
+                        })()}
                         suffix="kg"
                         valueStyle={{ color: '#52c41a' }}
                       />
