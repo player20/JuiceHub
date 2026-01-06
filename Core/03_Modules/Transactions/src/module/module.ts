@@ -550,6 +550,12 @@ export class TransactionsModule extends AbstractModule {
     const transactionId = message.payload.transactionId;
     const meterValues = message.payload.meterValue;
 
+    // Log detailed info for debugging
+    this._logger.info(
+      `MeterValues received: station=${stationId}, connector=${connectorId}, transactionId=${transactionId}, ` +
+      `meterValueCount=${meterValues.length}`
+    );
+
     if (connectorId !== 0 && transactionId && meterValues.length > 0) {
       try {
         const meterValueEntities: MeterValue[] = [];
@@ -565,15 +571,30 @@ export class TransactionsModule extends AbstractModule {
           }
         }
         if (meterValueEntities.length > 0) {
+          this._logger.info(
+            `Attempting to link ${meterValueEntities.length} MeterValues to transaction ${transactionId}`
+          );
           await this._transactionEventRepository.updateTransactionByMeterValues(
             tenantId,
             meterValueEntities,
             stationId,
             transactionId,
           );
+          this._logger.info(`Successfully linked MeterValues to transaction ${transactionId}`);
         }
       } catch (e) {
-        this._logger.error(`Failed to process MeterValues.`, e);
+        this._logger.error(`Failed to process MeterValues for transaction ${transactionId}:`, e);
+      }
+    } else {
+      // Log why MeterValues were skipped
+      if (connectorId === 0) {
+        this._logger.warn(`Skipping MeterValues for connector 0 (station-level)`);
+      } else if (!transactionId) {
+        this._logger.warn(
+          `Skipping MeterValues: missing transactionId (station=${stationId}, connector=${connectorId})`
+        );
+      } else if (meterValues.length === 0) {
+        this._logger.warn(`Skipping MeterValues: empty meterValues array`);
       }
     }
 

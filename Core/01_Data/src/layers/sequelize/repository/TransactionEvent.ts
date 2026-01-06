@@ -604,6 +604,12 @@ export class SequelizeTransactionEventRepository
     stationId: string,
     transactionId: number,
   ): Promise<void> {
+    this.logger.info(
+      `updateTransactionByMeterValues called: tenantId=${tenantId}, ` +
+      `stationId=${stationId}, transactionId=${transactionId}, ` +
+      `meterValueCount=${meterValues.length}`
+    );
+
     // Find existing transaction
     const transaction = await this.readTransactionByStationIdAndTransactionId(
       tenantId,
@@ -611,9 +617,34 @@ export class SequelizeTransactionEventRepository
       transactionId.toString(),
     );
     if (!transaction) {
-      this.logger.error(`Transaction ${transactionId} on station ${stationId} does not exist.`);
+      this.logger.error(
+        `CRITICAL: Transaction lookup failed! ` +
+        `transactionId=${transactionId}, stationId=${stationId}, tenantId=${tenantId}. ` +
+        `This will cause MeterValues to be discarded. Checking all transactions for this station...`
+      );
+
+      // Debug: List all transactions for this station
+      const allTransactions = await this.transaction.readAllByQuery(tenantId, {
+        where: { stationId },
+        order: [['createdAt', 'DESC']],
+        limit: 5,
+      });
+      this.logger.error(
+        `Found ${allTransactions.length} transactions for station ${stationId}: ` +
+        JSON.stringify(allTransactions.map(t => ({
+          id: t.id,
+          transactionId: t.transactionId,
+          isActive: t.isActive,
+          createdAt: t.createdAt,
+        })))
+      );
       return;
     }
+
+    this.logger.info(
+      `Transaction found: id=${transaction.id}, transactionId=${transaction.transactionId}, ` +
+      `isActive=${transaction.isActive}`
+    );
 
     // Store meter values
     await Promise.all(
