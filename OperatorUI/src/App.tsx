@@ -262,8 +262,7 @@ const MainAntDApp: React.FC<MainAntdAppProps> = ({
           onDecision={handleModalDecision}
         />
 
-        <SystemSettingsProvider>
-          <Refine
+        <Refine
           authProvider={authProvider}
           accessControlProvider={accessControlProvider}
           dataProvider={hasuraDataProvider}
@@ -282,7 +281,8 @@ const MainAntDApp: React.FC<MainAntdAppProps> = ({
             liveMode: 'auto',
           }}
         >
-          <Routes>
+          <SystemSettingsProvider>
+            <Routes>
             <Route path="/login" element={<LoginPage />} />
             <Route
               element={
@@ -338,13 +338,13 @@ const MainAntDApp: React.FC<MainAntdAppProps> = ({
               <Route path="/help" element={<HelpPage />} />
               <Route path="*" element={<ErrorComponent />} />
             </Route>
-          </Routes>
+            </Routes>
 
-          <RefineKbar />
-          <UnsavedChangesNotifier />
-          <DocumentTitleHandler handler={tabTitleHandler} />
+            <RefineKbar />
+            <UnsavedChangesNotifier />
+            <DocumentTitleHandler handler={tabTitleHandler} />
+          </SystemSettingsProvider>
         </Refine>
-        </SystemSettingsProvider>
       </ConfigProvider>
     </AntdApp>
   );
