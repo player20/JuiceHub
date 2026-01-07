@@ -139,7 +139,7 @@ export = {
           category: 'system',
           error_code: 'SYSTEM_INIT',
           message: 'ErrorLogs table created successfully',
-          error_details: { version: '1.0.0', created_by: 'migration' },
+          error_details: JSON.stringify({ version: '1.0.0', created_by: 'migration' }),
           component: 'Database',
           status: 'resolved',
           occurred_at: new Date(),
