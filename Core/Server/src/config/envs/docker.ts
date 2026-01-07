@@ -182,7 +182,7 @@ export function createDockerConfig() {
             id: '0',
             securityProfile: 0,
             allowUnknownChargingStations: process.env.ALLOW_UNKNOWN_CHARGERS === 'true',
-            pingInterval: 60,
+            pingInterval: 300, // 5 minutes - increased for charger stability
             host: '0.0.0.0',
             port: 8081,
             protocol: 'ocpp2.0.1',
@@ -192,7 +192,7 @@ export function createDockerConfig() {
             id: '1',
             securityProfile: 1,
             allowUnknownChargingStations: false,
-            pingInterval: 60,
+            pingInterval: 300, // 5 minutes - increased for charger stability
             host: '0.0.0.0',
             port: 8082,
             protocol: 'ocpp2.0.1',
@@ -202,7 +202,7 @@ export function createDockerConfig() {
             id: '2',
             securityProfile: 2,
             allowUnknownChargingStations: false,
-            pingInterval: 60,
+            pingInterval: 300, // 5 minutes - increased for charger stability
             host: '0.0.0.0',
             port: 8443,
             protocol: 'ocpp2.0.1',
@@ -224,7 +224,7 @@ export function createDockerConfig() {
             id: '3',
             securityProfile: 3,
             allowUnknownChargingStations: false,
-            pingInterval: 60,
+            pingInterval: 300, // 5 minutes - increased for charger stability
             host: '0.0.0.0',
             port: 8444,
             protocol: 'ocpp2.0.1',
@@ -250,7 +250,7 @@ export function createDockerConfig() {
             id: '4',
             securityProfile: 0,
             allowUnknownChargingStations: process.env.ALLOW_UNKNOWN_CHARGERS === 'true',
-            pingInterval: 60,
+            pingInterval: 300, // 5 minutes - increased for Wallbox charger stability
             host: '0.0.0.0',
             port: 8092,
             protocol: 'ocpp1.6',
