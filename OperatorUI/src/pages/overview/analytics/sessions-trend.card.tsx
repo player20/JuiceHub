@@ -26,7 +26,7 @@ export const SessionsTrendCard: React.FC = () => {
     method: 'post',
     meta: {
       operation: 'GetTodayStats',
-      variables: {
+      gqlVariables: {
         today: today,
       },
       gqlQuery: GET_TODAY_STATS,
@@ -39,7 +39,7 @@ export const SessionsTrendCard: React.FC = () => {
     method: 'post',
     meta: {
       operation: 'GetSparklineData',
-      variables: {
+      gqlVariables: {
         startTime: last24Hours,
       },
       gqlQuery: GET_SPARKLINE_DATA,

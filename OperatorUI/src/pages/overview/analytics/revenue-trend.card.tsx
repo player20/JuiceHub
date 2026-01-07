@@ -22,7 +22,7 @@ export const RevenueTrendCard: React.FC = () => {
     method: 'post',
     meta: {
       operation: 'GetTodayStats',
-      variables: {
+      gqlVariables: {
         today: today,
       },
       gqlQuery: GET_TODAY_STATS,
