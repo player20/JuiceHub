@@ -4,150 +4,70 @@
 'use strict';
 
 /** @type {import('sequelize-cli').Migration} */
-import { DataTypes, QueryInterface } from 'sequelize';
+import { QueryInterface } from 'sequelize';
 
 const TABLE_NAME = 'ErrorLogs';
 
 export = {
   up: async (queryInterface: QueryInterface) => {
-    await queryInterface.createTable(TABLE_NAME, {
-      id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true,
-        allowNull: false,
-      },
-      severity: {
-        type: DataTypes.STRING(20),
-        allowNull: false,
-        validate: {
-          isIn: [['critical', 'error', 'warning', 'info']],
-        },
-      },
-      category: {
-        type: DataTypes.STRING(50),
-        allowNull: false,
-        validate: {
-          isIn: [['ocpp', 'database', 'api', 'frontend', 'authentication', 'system', 'other']],
-        },
-      },
-      error_code: {
-        type: DataTypes.STRING(50),
-        allowNull: true,
-      },
-      message: {
-        type: DataTypes.TEXT,
-        allowNull: false,
-      },
-      error_details: {
-        type: DataTypes.JSONB,
-        allowNull: true,
-      },
-      component: {
-        type: DataTypes.STRING(100),
-        allowNull: true,
-      },
-      station_id: {
-        type: DataTypes.STRING(255),
-        allowNull: true,
-      },
-      transaction_id: {
-        type: DataTypes.STRING(50),
-        allowNull: true,
-      },
-      user_id: {
-        type: DataTypes.STRING(100),
-        allowNull: true,
-      },
-      status: {
-        type: DataTypes.STRING(20),
-        allowNull: false,
-        defaultValue: 'open',
-        validate: {
-          isIn: [['open', 'investigating', 'resolved', 'ignored']],
-        },
-      },
-      occurred_at: {
-        type: DataTypes.DATE,
-        allowNull: false,
-        defaultValue: DataTypes.NOW,
-      },
-      resolved_at: {
-        type: DataTypes.DATE,
-        allowNull: true,
-      },
-      resolved_by: {
-        type: DataTypes.STRING(100),
-        allowNull: true,
-      },
-      resolution_notes: {
-        type: DataTypes.TEXT,
-        allowNull: true,
-      },
-      createdAt: {
-        type: DataTypes.DATE,
-        allowNull: false,
-        defaultValue: DataTypes.NOW,
-      },
-      updatedAt: {
-        type: DataTypes.DATE,
-        allowNull: false,
-        defaultValue: DataTypes.NOW,
-      },
-    });
+    // Use raw SQL for complete control and idempotency
+    await queryInterface.sequelize.query(`
+      -- Create table if it doesn't exist
+      CREATE TABLE IF NOT EXISTS "${TABLE_NAME}" (
+        id SERIAL PRIMARY KEY,
+        severity VARCHAR(20) NOT NULL CHECK (severity IN ('critical', 'error', 'warning', 'info')),
+        category VARCHAR(50) NOT NULL CHECK (category IN ('ocpp', 'database', 'api', 'frontend', 'authentication', 'system', 'other')),
+        error_code VARCHAR(50),
+        message TEXT NOT NULL,
+        error_details JSONB,
+        component VARCHAR(100),
+        station_id VARCHAR(255),
+        transaction_id VARCHAR(50),
+        user_id VARCHAR(100),
+        status VARCHAR(20) NOT NULL DEFAULT 'open' CHECK (status IN ('open', 'investigating', 'resolved', 'ignored')),
+        occurred_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+        resolved_at TIMESTAMP WITH TIME ZONE,
+        resolved_by VARCHAR(100),
+        resolution_notes TEXT,
+        "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+        "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+      );
 
-    // Create indexes for common queries (using raw SQL for IF NOT EXISTS support)
-    await queryInterface.sequelize.query(
-      `CREATE INDEX IF NOT EXISTS "idx_errorlogs_severity" ON "ErrorLogs" ("severity")`
-    );
+      -- Create indexes if they don't exist
+      CREATE INDEX IF NOT EXISTS "idx_errorlogs_severity" ON "${TABLE_NAME}" (severity);
+      CREATE INDEX IF NOT EXISTS "idx_errorlogs_category" ON "${TABLE_NAME}" (category);
+      CREATE INDEX IF NOT EXISTS "idx_errorlogs_status" ON "${TABLE_NAME}" (status);
+      CREATE INDEX IF NOT EXISTS "idx_errorlogs_station_id" ON "${TABLE_NAME}" (station_id) WHERE station_id IS NOT NULL;
+      CREATE INDEX IF NOT EXISTS "idx_errorlogs_occurred_at" ON "${TABLE_NAME}" (occurred_at DESC);
+      CREATE INDEX IF NOT EXISTS "idx_errorlogs_created_at" ON "${TABLE_NAME}" ("createdAt" DESC);
+      CREATE INDEX IF NOT EXISTS "idx_errorlogs_status_severity" ON "${TABLE_NAME}" (status, severity);
 
-    await queryInterface.sequelize.query(
-      `CREATE INDEX IF NOT EXISTS "idx_errorlogs_category" ON "ErrorLogs" ("category")`
-    );
-
-    await queryInterface.sequelize.query(
-      `CREATE INDEX IF NOT EXISTS "idx_errorlogs_status" ON "ErrorLogs" ("status")`
-    );
-
-    await queryInterface.sequelize.query(
-      `CREATE INDEX IF NOT EXISTS "idx_errorlogs_station_id" ON "ErrorLogs" ("station_id") WHERE station_id IS NOT NULL`
-    );
-
-    await queryInterface.sequelize.query(
-      `CREATE INDEX IF NOT EXISTS "idx_errorlogs_occurred_at" ON "ErrorLogs" ("occurred_at" DESC)`
-    );
-
-    await queryInterface.sequelize.query(
-      `CREATE INDEX IF NOT EXISTS "idx_errorlogs_created_at" ON "ErrorLogs" ("createdAt" DESC)`
-    );
-
-    // Create composite index for filtering by status + severity
-    await queryInterface.sequelize.query(
-      `CREATE INDEX IF NOT EXISTS "idx_errorlogs_status_severity" ON "ErrorLogs" ("status", "severity")`
-    );
-
-    // Insert sample error for testing (only if table is empty)
-    const [results] = await queryInterface.sequelize.query(
-      `SELECT COUNT(*) as count FROM "ErrorLogs"`
-    );
-    const count = parseInt((results[0] as any).count);
-
-    if (count === 0) {
-      await queryInterface.bulkInsert(TABLE_NAME, [
-        {
-          severity: 'info',
-          category: 'system',
-          error_code: 'SYSTEM_INIT',
-          message: 'ErrorLogs table created successfully',
-          error_details: JSON.stringify({ version: '1.0.0', created_by: 'migration' }),
-          component: 'Database',
-          status: 'resolved',
-          occurred_at: new Date(),
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      ]);
-    }
+      -- Insert sample error only if table is empty
+      INSERT INTO "${TABLE_NAME}" (
+        severity,
+        category,
+        error_code,
+        message,
+        error_details,
+        component,
+        status,
+        occurred_at,
+        "createdAt",
+        "updatedAt"
+      )
+      SELECT
+        'info',
+        'system',
+        'SYSTEM_INIT',
+        'ErrorLogs table created successfully',
+        '{"version": "1.0.0", "created_by": "migration"}'::jsonb,
+        'Database',
+        'resolved',
+        NOW(),
+        NOW(),
+        NOW()
+      WHERE NOT EXISTS (SELECT 1 FROM "${TABLE_NAME}");
+    `);
   },
 
   down: async (queryInterface: QueryInterface) => {

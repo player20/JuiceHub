@@ -4,74 +4,45 @@
 'use strict';
 
 /** @type {import('sequelize-cli').Migration} */
-import { DataTypes, QueryInterface } from 'sequelize';
+import { QueryInterface } from 'sequelize';
 
 const TABLE_NAME = 'SystemSettings';
 
 export = {
   up: async (queryInterface: QueryInterface) => {
-    await queryInterface.createTable(TABLE_NAME, {
-      id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true,
-        allowNull: false,
-      },
-      google_maps_api_key: {
-        type: DataTypes.STRING(255),
-        allowNull: true,
-      },
-      google_maps_enabled: {
-        type: DataTypes.BOOLEAN,
-        allowNull: false,
-        defaultValue: false,
-      },
-      organization_name: {
-        type: DataTypes.STRING(255),
-        allowNull: true,
-      },
-      support_email: {
-        type: DataTypes.STRING(255),
-        allowNull: true,
-      },
-      support_phone: {
-        type: DataTypes.STRING(50),
-        allowNull: true,
-      },
-      createdAt: {
-        type: DataTypes.DATE,
-        allowNull: false,
-        defaultValue: DataTypes.NOW,
-      },
-      updatedAt: {
-        type: DataTypes.DATE,
-        allowNull: false,
-        defaultValue: DataTypes.NOW,
-      },
-    });
+    // Use raw SQL for complete control and idempotency
+    await queryInterface.sequelize.query(`
+      -- Create table if it doesn't exist
+      CREATE TABLE IF NOT EXISTS "${TABLE_NAME}" (
+        id SERIAL PRIMARY KEY,
+        google_maps_api_key VARCHAR(255),
+        google_maps_enabled BOOLEAN DEFAULT false,
+        organization_name VARCHAR(255),
+        support_email VARCHAR(255),
+        support_phone VARCHAR(50),
+        "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+        "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+      );
 
-    // Create index (using raw SQL for IF NOT EXISTS support)
-    await queryInterface.sequelize.query(
-      `CREATE INDEX IF NOT EXISTS "idx_systemsettings_id" ON "SystemSettings" ("id")`
-    );
+      -- Create index if it doesn't exist
+      CREATE INDEX IF NOT EXISTS "idx_systemsettings_id" ON "${TABLE_NAME}" ("id");
 
-    // Insert default row (only if table is empty)
-    const [results] = await queryInterface.sequelize.query(
-      `SELECT COUNT(*) as count FROM "SystemSettings"`
-    );
-    const count = parseInt((results[0] as any).count);
-
-    if (count === 0) {
-      await queryInterface.bulkInsert(TABLE_NAME, [
-        {
-          organization_name: 'JuiceHub EV Charging',
-          google_maps_enabled: false,
-          support_email: 'support@juicehub.com',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      ]);
-    }
+      -- Insert default row only if table is empty
+      INSERT INTO "${TABLE_NAME}" (
+        organization_name,
+        google_maps_enabled,
+        support_email,
+        "createdAt",
+        "updatedAt"
+      )
+      SELECT
+        'JuiceHub EV Charging',
+        false,
+        'support@juicehub.com',
+        NOW(),
+        NOW()
+      WHERE NOT EXISTS (SELECT 1 FROM "${TABLE_NAME}");
+    `);
   },
 
   down: async (queryInterface: QueryInterface) => {
