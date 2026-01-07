@@ -59,7 +59,7 @@ export const AnalyticsDashboard: React.FC = () => {
     method: 'post',
     meta: {
       operation: 'GetUsageAggregate',
-      variables: {
+      gqlVariables: {
         startDate: startDate,
         endDate: endDate,
       },
@@ -73,7 +73,7 @@ export const AnalyticsDashboard: React.FC = () => {
     method: 'post',
     meta: {
       operation: 'GetUsageSnapshots',
-      variables: {
+      gqlVariables: {
         startDate: startDate,
         endDate: endDate,
       },
@@ -87,9 +87,9 @@ export const AnalyticsDashboard: React.FC = () => {
     method: 'post',
     meta: {
       operation: 'GetLowPerformingStations',
-      variables: {
-        threshold: { value: 70, type: 'Int', required: true },
-        date: { value: new Date().toISOString().split('T')[0], type: 'date', required: true },
+      gqlVariables: {
+        threshold: 70,
+        date: new Date().toISOString().split('T')[0],
       },
       gqlQuery: GET_LOW_PERFORMING_STATIONS,
     },

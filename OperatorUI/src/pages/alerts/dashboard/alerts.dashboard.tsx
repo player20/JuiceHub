@@ -55,9 +55,9 @@ export const AlertsDashboard: React.FC = () => {
     method: 'post',
     meta: {
       operation: 'GetAlertStats',
-      variables: {
-        startDate: { value: startDate, type: 'timestamptz', required: true },
-        endDate: { value: endDate, type: 'timestamptz', required: true },
+      gqlVariables: {
+        startDate: startDate,
+        endDate: endDate,
       },
       gqlQuery: GET_ALERT_STATS,
     },
@@ -69,14 +69,10 @@ export const AlertsDashboard: React.FC = () => {
     method: 'post',
     meta: {
       operation: 'GetActiveAlerts',
-      variables: {
-        limit: { value: 10, type: 'Int', required: true },
-        offset: { value: 0, type: 'Int', required: true },
-        where: {
-          value: { status: { _eq: 'active' } },
-          type: 'alerts_bool_exp',
-          required: false,
-        },
+      gqlVariables: {
+        limit: 10,
+        offset: 0,
+        where: { status: { _eq: 'active' } },
       },
       gqlQuery: GET_ACTIVE_ALERTS,
     },
@@ -88,19 +84,11 @@ export const AlertsDashboard: React.FC = () => {
     method: 'post',
     meta: {
       operation: 'GetIncidents',
-      variables: {
-        limit: { value: 5, type: 'Int', required: true },
-        offset: { value: 0, type: 'Int', required: true },
-        where: {
-          value: { status: { _in: ['open', 'investigating'] } },
-          type: 'incidents_bool_exp',
-          required: false,
-        },
-        orderBy: {
-          value: [{ created_at: 'desc' }],
-          type: '[incidents_order_by!]',
-          required: false,
-        },
+      gqlVariables: {
+        limit: 5,
+        offset: 0,
+        where: { status: { _in: ['open', 'investigating'] } },
+        orderBy: [{ created_at: 'desc' }],
       },
       gqlQuery: GET_INCIDENTS,
     },
@@ -112,10 +100,10 @@ export const AlertsDashboard: React.FC = () => {
     method: 'post',
     meta: {
       operation: 'GetNotifications',
-      variables: {
-        limit: { value: 10, type: 'Int', required: true },
-        offset: { value: 0, type: 'Int', required: true },
-        where: { value: {}, type: 'notifications_bool_exp', required: false },
+      gqlVariables: {
+        limit: 10,
+        offset: 0,
+        where: {},
       },
       gqlQuery: GET_NOTIFICATIONS,
     },
