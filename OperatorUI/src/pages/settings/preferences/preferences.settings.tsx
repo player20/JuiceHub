@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Typography,
   Form,
@@ -15,13 +15,20 @@ import {
   message,
   Radio,
   InputNumber,
+  Input,
+  Alert,
+  Tooltip,
 } from 'antd';
 import {
   SaveOutlined,
   GlobalOutlined,
   ClockCircleOutlined,
   BgColorsOutlined,
+  ApiOutlined,
+  InfoCircleOutlined,
 } from '@ant-design/icons';
+import { useCustom } from '@refinedev/core';
+import { GET_SYSTEM_SETTINGS, UPDATE_SYSTEM_SETTINGS } from '../../../graphql/system-settings-queries';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -29,15 +36,63 @@ const { Option } = Select;
 export const PreferencesSettings: React.FC = () => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
+  const [settingsId, setSettingsId] = useState<number | null>(null);
+
+  // Fetch system settings
+  const { data: settingsData, isLoading: settingsLoading } = useCustom({
+    url: '',
+    method: 'post',
+    meta: {
+      operation: 'GetSystemSettings',
+      gqlQuery: GET_SYSTEM_SETTINGS,
+    },
+  } as any);
+
+  // Load settings into form when data is available
+  useEffect(() => {
+    if (settingsData?.data?.SystemSettings?.[0]) {
+      const settings = settingsData.data.SystemSettings[0];
+      setSettingsId(settings.id);
+      form.setFieldsValue({
+        google_maps_api_key: settings.google_maps_api_key || '',
+        google_maps_enabled: settings.google_maps_enabled || false,
+      });
+    }
+  }, [settingsData, form]);
+
+  const { mutate: updateSettings } = useCustom<any>();
 
   const handleSubmit = async (values: any) => {
+    if (!settingsId) {
+      message.error('Settings not loaded yet. Please refresh the page.');
+      return;
+    }
+
     setLoading(true);
     try {
-      // TODO: API call to update preferences
+      // Update Google Maps settings if they were changed
+      if ('google_maps_api_key' in values || 'google_maps_enabled' in values) {
+        await updateSettings({
+          url: '',
+          method: 'post',
+          meta: {
+            operation: 'UpdateSystemSettings',
+            gqlVariables: {
+              id: settingsId,
+              google_maps_api_key: values.google_maps_api_key || null,
+              google_maps_enabled: values.google_maps_enabled || false,
+            },
+            gqlMutation: UPDATE_SYSTEM_SETTINGS,
+          },
+        });
+      }
+
+      // TODO: API call to update other preferences
       console.log('Preferences:', values);
       await new Promise((resolve) => setTimeout(resolve, 1000));
       message.success('Preferences updated successfully');
     } catch (error) {
+      console.error('Failed to update preferences:', error);
       message.error('Failed to update preferences');
     } finally {
       setLoading(false);
@@ -220,6 +275,63 @@ export const PreferencesSettings: React.FC = () => {
           </Form.Item>
           <Text type="secondary">
             Auto-logout after period of inactivity
+          </Text>
+        </Card>
+
+        {/* Integration Settings */}
+        <Card
+          title={<><ApiOutlined /> Integration Settings</>}
+          style={{ marginBottom: 24 }}
+          loading={settingsLoading}
+        >
+          <Alert
+            message="Google Maps API Configuration"
+            description="Configure your Google Maps API key to enable location mapping features. You can get an API key from Google Cloud Console."
+            type="info"
+            showIcon
+            style={{ marginBottom: 16 }}
+            action={
+              <Button
+                size="small"
+                type="link"
+                href="https://console.cloud.google.com/apis/credentials"
+                target="_blank"
+              >
+                Get API Key
+              </Button>
+            }
+          />
+
+          <Form.Item
+            label={
+              <Space>
+                Google Maps API Key
+                <Tooltip title="Enter your Google Maps JavaScript API key from Google Cloud Console. The key should start with 'AIza'. See the setup guide for detailed instructions.">
+                  <InfoCircleOutlined style={{ color: '#1890ff' }} />
+                </Tooltip>
+              </Space>
+            }
+            name="google_maps_api_key"
+          >
+            <Input.Password
+              size="large"
+              placeholder="AIzaSyB..."
+              visibilityToggle
+            />
+          </Form.Item>
+          <Text type="secondary" style={{ display: 'block', marginBottom: 16 }}>
+            Your API key is securely stored and only used for map display on the Locations page
+          </Text>
+
+          <Form.Item
+            label="Enable Google Maps"
+            name="google_maps_enabled"
+            valuePropName="checked"
+          >
+            <Switch />
+          </Form.Item>
+          <Text type="secondary">
+            Toggle map features on/off (requires valid API key)
           </Text>
         </Card>
 

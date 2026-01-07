@@ -25,8 +25,7 @@ import { CanAccess } from '@refinedev/core';
 import { ActionType, ResourceType } from '@util/auth';
 import config from '@util/config';
 import { ILocationDto } from '@citrineos/base';
-
-const apiKey = config.googleMapsApiKey;
+import { useSystemSettings } from '../../contexts/SystemSettingsContext';
 
 const singleElementZoom = 12;
 
@@ -41,6 +40,8 @@ export const LocationMap: React.FC<MapProps> = ({
   selectedMarkerId,
   clusterByLocation = true,
 }) => {
+  const { getGoogleMapsApiKey } = useSystemSettings();
+  const apiKey = getGoogleMapsApiKey();
   // Create station markers from location data
   const stationMarkers: MapMarkerData[] = useMemo(() => {
     return locations.flatMap((location) => {

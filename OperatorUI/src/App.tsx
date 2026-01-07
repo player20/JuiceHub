@@ -37,6 +37,7 @@ import {
   ColorModeContext,
   ColorModeContextProvider,
 } from './contexts/color-mode';
+import { SystemSettingsProvider } from './contexts/SystemSettingsContext';
 import {
   resources as locationResources,
   routes as LocationsRoutes,
@@ -261,7 +262,8 @@ const MainAntDApp: React.FC<MainAntdAppProps> = ({
           onDecision={handleModalDecision}
         />
 
-        <Refine
+        <SystemSettingsProvider>
+          <Refine
           authProvider={authProvider}
           accessControlProvider={accessControlProvider}
           dataProvider={hasuraDataProvider}
@@ -342,6 +344,7 @@ const MainAntDApp: React.FC<MainAntdAppProps> = ({
           <UnsavedChangesNotifier />
           <DocumentTitleHandler handler={tabTitleHandler} />
         </Refine>
+        </SystemSettingsProvider>
       </ConfigProvider>
     </AntdApp>
   );
