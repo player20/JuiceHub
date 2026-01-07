@@ -96,58 +96,58 @@ export = {
       },
     });
 
-    // Create indexes for common queries
-    await queryInterface.addIndex(TABLE_NAME, ['severity'], {
-      name: 'idx_errorlogs_severity',
-    });
+    // Create indexes for common queries (using raw SQL for IF NOT EXISTS support)
+    await queryInterface.sequelize.query(
+      `CREATE INDEX IF NOT EXISTS "idx_errorlogs_severity" ON "ErrorLogs" ("severity")`
+    );
 
-    await queryInterface.addIndex(TABLE_NAME, ['category'], {
-      name: 'idx_errorlogs_category',
-    });
+    await queryInterface.sequelize.query(
+      `CREATE INDEX IF NOT EXISTS "idx_errorlogs_category" ON "ErrorLogs" ("category")`
+    );
 
-    await queryInterface.addIndex(TABLE_NAME, ['status'], {
-      name: 'idx_errorlogs_status',
-    });
+    await queryInterface.sequelize.query(
+      `CREATE INDEX IF NOT EXISTS "idx_errorlogs_status" ON "ErrorLogs" ("status")`
+    );
 
-    await queryInterface.addIndex(TABLE_NAME, ['station_id'], {
-      name: 'idx_errorlogs_station_id',
-      where: {
-        station_id: {
-          [DataTypes.Op.ne]: null,
-        },
-      },
-    });
+    await queryInterface.sequelize.query(
+      `CREATE INDEX IF NOT EXISTS "idx_errorlogs_station_id" ON "ErrorLogs" ("station_id") WHERE station_id IS NOT NULL`
+    );
 
-    await queryInterface.addIndex(TABLE_NAME, ['occurred_at'], {
-      name: 'idx_errorlogs_occurred_at',
-      order: [['occurred_at', 'DESC']],
-    });
+    await queryInterface.sequelize.query(
+      `CREATE INDEX IF NOT EXISTS "idx_errorlogs_occurred_at" ON "ErrorLogs" ("occurred_at" DESC)`
+    );
 
-    await queryInterface.addIndex(TABLE_NAME, ['createdAt'], {
-      name: 'idx_errorlogs_created_at',
-      order: [['createdAt', 'DESC']],
-    });
+    await queryInterface.sequelize.query(
+      `CREATE INDEX IF NOT EXISTS "idx_errorlogs_created_at" ON "ErrorLogs" ("createdAt" DESC)`
+    );
 
     // Create composite index for filtering by status + severity
-    await queryInterface.addIndex(TABLE_NAME, ['status', 'severity'], {
-      name: 'idx_errorlogs_status_severity',
-    });
+    await queryInterface.sequelize.query(
+      `CREATE INDEX IF NOT EXISTS "idx_errorlogs_status_severity" ON "ErrorLogs" ("status", "severity")`
+    );
 
-    // Insert sample error for testing
-    await queryInterface.bulkInsert(TABLE_NAME, [
-      {
-        severity: 'info',
-        category: 'system',
-        error_code: 'SYSTEM_INIT',
-        message: 'ErrorLogs table created successfully',
-        error_details: { version: '1.0.0', created_by: 'migration' },
-        component: 'Database',
-        status: 'resolved',
-        occurred_at: new Date(),
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-    ]);
+    // Insert sample error for testing (only if table is empty)
+    const [results] = await queryInterface.sequelize.query(
+      `SELECT COUNT(*) as count FROM "ErrorLogs"`
+    );
+    const count = parseInt((results[0] as any).count);
+
+    if (count === 0) {
+      await queryInterface.bulkInsert(TABLE_NAME, [
+        {
+          severity: 'info',
+          category: 'system',
+          error_code: 'SYSTEM_INIT',
+          message: 'ErrorLogs table created successfully',
+          error_details: { version: '1.0.0', created_by: 'migration' },
+          component: 'Database',
+          status: 'resolved',
+          occurred_at: new Date(),
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ]);
+    }
   },
 
   down: async (queryInterface: QueryInterface) => {

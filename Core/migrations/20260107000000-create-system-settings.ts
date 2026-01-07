@@ -50,21 +50,28 @@ export = {
       },
     });
 
-    // Create index
-    await queryInterface.addIndex(TABLE_NAME, ['id'], {
-      name: 'idx_systemsettings_id',
-    });
+    // Create index (using raw SQL for IF NOT EXISTS support)
+    await queryInterface.sequelize.query(
+      `CREATE INDEX IF NOT EXISTS "idx_systemsettings_id" ON "SystemSettings" ("id")`
+    );
 
-    // Insert default row (only one row should exist in this table)
-    await queryInterface.bulkInsert(TABLE_NAME, [
-      {
-        organization_name: 'JuiceHub EV Charging',
-        google_maps_enabled: false,
-        support_email: 'support@juicehub.com',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-    ]);
+    // Insert default row (only if table is empty)
+    const [results] = await queryInterface.sequelize.query(
+      `SELECT COUNT(*) as count FROM "SystemSettings"`
+    );
+    const count = parseInt((results[0] as any).count);
+
+    if (count === 0) {
+      await queryInterface.bulkInsert(TABLE_NAME, [
+        {
+          organization_name: 'JuiceHub EV Charging',
+          google_maps_enabled: false,
+          support_email: 'support@juicehub.com',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ]);
+    }
   },
 
   down: async (queryInterface: QueryInterface) => {
