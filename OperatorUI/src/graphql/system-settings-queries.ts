@@ -13,8 +13,8 @@ export const GET_SYSTEM_SETTINGS = gql`
       organization_name
       support_email
       support_phone
-      created_at
-      updated_at
+      createdAt
+      updatedAt
     }
   }
 `;
@@ -44,7 +44,7 @@ export const UPDATE_SYSTEM_SETTINGS = gql`
       organization_name
       support_email
       support_phone
-      updated_at
+      updatedAt
     }
   }
 `;
