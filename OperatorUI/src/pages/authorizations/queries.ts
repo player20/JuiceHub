@@ -122,12 +122,9 @@ export const AUTHORIZATIONS_SHOW_QUERY = gql`
       disallowedEvseIdPrefixes
       realTimeAuth
       realTimeAuthUrl
+      tenantPartnerId
       createdAt
       updatedAt
-      tenantPartner: TenantPartner {
-        id
-        partnerProfileOCPI
-      }
     }
   }
 `;
