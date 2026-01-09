@@ -179,6 +179,16 @@ export function createDockerConfig() {
       networkConnection: {
         websocketServers: [
           {
+            id: 'main',
+            securityProfile: 0,
+            allowUnknownChargingStations: true, // Always allow for simple user setup
+            pingInterval: 300, // 5 minutes - increased for charger stability
+            host: '0.0.0.0',
+            port: parseInt(process.env.PORT || '8080', 10), // Use main Render port
+            protocol: 'ocpp1.6',
+            tenantId: DEFAULT_TENANT_ID,
+          },
+          {
             id: '0',
             securityProfile: 0,
             allowUnknownChargingStations: process.env.ALLOW_UNKNOWN_CHARGERS === 'true',
