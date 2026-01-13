@@ -683,18 +683,52 @@ export class SequelizeTransactionEventRepository
       });
 
       // Associate Connector with StartTransaction
-      const connector = await this.connector.readOnlyOneByQuery(tenantId, {
+      // Auto-create EVSE if it doesn't exist (for OCPP 1.6 compatibility)
+      this.logger.info(
+        `[createTransaction] Looking up/creating EVSE for station ${stationId}`,
+      );
+      const [evse] = await this.evse.readOrCreateByQuery(tenantId, {
         where: {
-          connectorId: request.connectorId,
+          tenantId,
           stationId,
+          evseTypeId: 1, // Default EVSE ID 1 for OCPP 1.6 stations
         },
-        include: [Tariff],
         sequelizeTransaction,
       });
-      if (!connector) {
-        this.logger.error(`Unable to find connector ${request.connectorId}.`);
-        throw new Error(`Unable to find connector ${request.connectorId}.`);
+
+      // Auto-create Connector if it doesn't exist
+      this.logger.info(
+        `[createTransaction] Looking up/creating connector: connectorId=${request.connectorId}, stationId=${stationId}`,
+      );
+      const [connector, connectorCreated] = await this.connector.readOrCreateByQuery(
+        tenantId,
+        {
+          where: {
+            tenantId,
+            stationId,
+            connectorId: request.connectorId,
+          },
+          defaults: {
+            evseId: evse.id,
+            evseTypeConnectorId: request.connectorId, // For OCPP 1.6, same as connectorId
+            status: 'Available',
+            timestamp: new Date().toISOString(),
+          },
+          include: [Tariff],
+          sequelizeTransaction,
+        },
+      );
+
+      if (connectorCreated) {
+        this.logger.info(
+          `[createTransaction] AUTO-CREATED connector ${connector.id} (OCPP connectorId ${request.connectorId}) for station ${stationId}`,
+        );
+      } else {
+        this.logger.info(
+          `[createTransaction] Found existing connector ${connector.id} (OCPP connectorId ${request.connectorId})`,
+        );
       }
+
       event.connectorDatabaseId = connector.id;
 
       // Find Authorization by IdToken
@@ -709,11 +743,14 @@ export class SequelizeTransactionEventRepository
       }
 
       // Generate transactionId
+      this.logger.info(`[createTransaction] Generating transaction ID for station ${stationId}...`);
       const transactionId = await this.chargingStationSequence.getNextSequenceValue(
         tenantId,
         stationId,
         ChargingStationSequenceType.transactionId,
       );
+      this.logger.info(`[createTransaction] Generated transaction ID: ${transactionId}`);
+
       // Store transaction in db
       let newTransaction = Transaction.build({
         tenantId,
@@ -742,6 +779,9 @@ export class SequelizeTransactionEventRepository
       }
 
       newTransaction = await newTransaction.save({ transaction: sequelizeTransaction });
+      this.logger.info(
+        `[createTransaction] SUCCESS: Saved transaction ${newTransaction.transactionId} (DB ID: ${newTransaction.id}, connectorId: ${newTransaction.connectorId}, meterStart: ${newTransaction.meterStart})`,
+      );
 
       // Store StartTransaction in db
       event.transactionDatabaseId = newTransaction.id;

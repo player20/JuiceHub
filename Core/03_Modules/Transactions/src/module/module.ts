@@ -29,6 +29,7 @@ import {
 import {
   Authorization,
   Component,
+  Connector,
   IAuthorizationRepository,
   IDeviceModelRepository,
   ILocationRepository,
@@ -589,15 +590,36 @@ export class TransactionsModule extends AbstractModule {
     } else if (connectorId !== 0 && !transactionId && meterValues.length > 0) {
       // *** FIX: OCPP 1.6 chargers often omit transactionId in MeterValues - look up by connector ***
       this._logger.info(
-        `MeterValues missing transactionId. Looking up active transaction: station=${stationId}, connector=${connectorId}`
+        `[MeterValues] Missing transactionId. Looking up active transaction: station=${stationId}, OCPP connectorId=${connectorId}`,
       );
 
       try {
-        // Look up most recent active transaction for this connector
+        // First, look up the connector database ID from the OCPP connector number
+        const connector = await Connector.findOne({
+          where: {
+            tenantId,
+            stationId,
+            connectorId: connectorId, // OCPP connector ID (1, 2, 3...)
+          },
+        });
+
+        if (!connector) {
+          this._logger.warn(
+            `[MeterValues] Cannot link: Connector ${connectorId} not found for station ${stationId}`,
+          );
+          return;
+        }
+
+        this._logger.info(
+          `[MeterValues] Found connector DB ID ${connector.id} for OCPP connectorId ${connectorId}`,
+        );
+
+        // Now look up most recent active transaction using the connector database ID
         const activeTransaction = await Transaction.findOne({
           where: {
+            tenantId,
             stationId,
-            connectorId,
+            connectorId: connector.id, // Database connector ID (primary key)
             isActive: true,
           },
           order: [['createdAt', 'DESC']],
@@ -664,10 +686,13 @@ export class TransactionsModule extends AbstractModule {
     message: IMessage<OCPP1_6.StartTransactionRequest>,
     props?: HandlerProperties,
   ): Promise<void> {
-    this._logger.debug('OCPP 1.6 StartTransaction request received:', message, props);
     const tenantId = message.context.tenantId;
     const stationId = message.context.stationId;
     const request = message.payload;
+
+    this._logger.info(
+      `[StartTransaction] Received: stationId=${stationId}, connectorId=${request.connectorId}, idTag="${request.idTag}", meterStart=${request.meterStart}`,
+    );
 
     // Authorize
     const response = await this._transactionService.authorizeOcpp16IdToken(
@@ -675,12 +700,20 @@ export class TransactionsModule extends AbstractModule {
       request.idTag,
     );
 
+    this._logger.info(
+      `[StartTransaction] Authorization result: status=${response.idTagInfo.status} for idTag="${request.idTag}"`,
+    );
+
     // Send response to charger
     if (response.idTagInfo.status !== OCPP1_6.StartTransactionResponseStatus.Accepted) {
+      this._logger.warn(
+        `[StartTransaction] REJECTED: Authorization failed for idTag "${request.idTag}" with status ${response.idTagInfo.status}`,
+      );
       await this.sendCallResultWithMessage(message, response);
     } else {
       try {
         // Create transaction
+        this._logger.info(`[StartTransaction] Creating transaction for station ${stationId}...`);
         const newTransaction =
           await this._transactionEventRepository.createTransactionByStartTransaction(
             tenantId,
@@ -688,8 +721,14 @@ export class TransactionsModule extends AbstractModule {
             stationId,
           );
         response.transactionId = parseInt(newTransaction.transactionId);
+        this._logger.info(
+          `[StartTransaction] SUCCESS: Created transaction ${newTransaction.transactionId} (DB ID: ${newTransaction.id})`,
+        );
       } catch (error) {
-        this._logger.error(`Failed to create transaction for idTag ${request.idTag}`, error);
+        this._logger.error(
+          `[StartTransaction] FAILED: Transaction creation error for idTag "${request.idTag}"`,
+          error,
+        );
         response.idTagInfo = {
           status: OCPP1_6.StartTransactionResponseStatus.Invalid,
         };
