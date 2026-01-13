@@ -524,24 +524,58 @@ export class WebsocketNetworkConnection {
   /**
    * Internal method to handle the error event for the WebSocket server.
    *
-   * @param {WebSocketServer} wss - The WebSocket server instance.
    * @param {Error} error - The error object.
    * @return {void} This function does not return anything.
    */
-  private _onError(wss: WebSocketServer, error: Error): void {
-    this._logger.error(error);
-    // TODO: Try to recover the Websocket server
+  private _onError(error: Error): void {
+    this._logger.error('WebSocket server error:', error);
+
+    // Clean up stale connections asynchronously
+    const staleConnections: string[] = [];
+    this._identifierConnections.forEach((ws, identifier) => {
+      if (ws.readyState === WebSocket.CLOSED || ws.readyState === WebSocket.CLOSING) {
+        staleConnections.push(identifier);
+      }
+    });
+
+    if (staleConnections.length > 0) {
+      this._logger.info(`Cleaning up ${staleConnections.length} stale connections`);
+      Promise.all(staleConnections.map(id => this._cleanupConnection(id))).catch(err => {
+        this._logger.error('Error during stale connection cleanup:', err);
+      });
+    }
   }
 
   /**
    * Internal method to handle the event when the WebSocketServer is closed.
    *
-   * @param {WebSocketServer} wss - The WebSocketServer instance.
    * @return {void} This function does not return anything.
    */
-  private _onClose(wss: WebSocketServer): void {
-    this._logger.debug('Websocket Server closed');
-    // TODO: Try to recover the Websocket server
+  private _onClose(): void {
+    this._logger.warn('WebSocket server closed');
+
+    // Clean up all connections asynchronously
+    const allConnections = Array.from(this._identifierConnections.keys());
+    if (allConnections.length > 0) {
+      this._logger.info(`Cleaning up ${allConnections.length} connections`);
+      Promise.all(allConnections.map(id => this._cleanupConnection(id))).catch(err => {
+        this._logger.error('Error during connection cleanup:', err);
+      });
+    }
+  }
+
+  /**
+   * Clean up a single connection by removing it from maps and cache
+   */
+  private async _cleanupConnection(identifier: string): Promise<void> {
+    try {
+      this._identifierConnections.delete(identifier);
+      this._tempConnections.delete(identifier);
+      await this._cache.remove(identifier, CacheNamespace.Connections);
+      this._logger.debug(`Connection ${identifier} cleaned up`);
+    } catch (error) {
+      this._logger.error(`Failed to cleanup connection ${identifier}:`, error);
+    }
   }
 
   /**
