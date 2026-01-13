@@ -528,32 +528,9 @@ export class WebsocketNetworkConnection {
    * @param {Error} error - The error object.
    * @return {void} This function does not return anything.
    */
-  private async _onError(wss: WebSocketServer, error: Error): Promise<void> {
-    this._logger.error('WebSocket server error:', error);
-
-    // *** FIX: Clean up stale connections and implement recovery ***
-    const staleConnections: string[] = [];
-    this._identifierConnections.forEach((ws, identifier) => {
-      if (ws.readyState === WebSocket.CLOSED || ws.readyState === WebSocket.CLOSING) {
-        staleConnections.push(identifier);
-      }
-    });
-
-    for (const identifier of staleConnections) {
-      this._logger.info(`Cleaning up stale connection: ${identifier}`);
-      await this._cleanupConnection(identifier);
-    }
-
-    if (staleConnections.length > 0) {
-      this._logger.info(`Cleaned up ${staleConnections.length} stale connections after error`);
-    }
-
-    // Check if error is critical (connection refused, address in use, etc.)
-    if (this._isCriticalError(error)) {
-      this._logger.warn(
-        'Critical WebSocket error detected. Container orchestration should handle restart if needed.',
-      );
-    }
+  private _onError(wss: WebSocketServer, error: Error): void {
+    this._logger.error(error);
+    // TODO: Try to recover the Websocket server
   }
 
   /**
@@ -562,57 +539,9 @@ export class WebsocketNetworkConnection {
    * @param {WebSocketServer} wss - The WebSocketServer instance.
    * @return {void} This function does not return anything.
    */
-  private async _onClose(wss: WebSocketServer): Promise<void> {
-    this._logger.warn('WebSocket server closed unexpectedly');
-
-    // *** FIX: Clean up all connections on server close ***
-    const allConnections = Array.from(this._identifierConnections.keys());
-    for (const identifier of allConnections) {
-      await this._cleanupConnection(identifier);
-    }
-
-    if (allConnections.length > 0) {
-      this._logger.info(`Cleaned up ${allConnections.length} connections after server close`);
-    }
-  }
-
-  /**
-   * Clean up a single connection by removing it from all maps and deregistering from router
-   *
-   * @param {string} identifier - The connection identifier to clean up
-   * @return {Promise<void>}
-   */
-  private async _cleanupConnection(identifier: string): Promise<void> {
-    try {
-      const tenantId = getTenantIdFromIdentifier(identifier);
-      const stationId = getStationIdFromIdentifier(identifier);
-
-      // Remove from connection maps
-      this._identifierConnections.delete(identifier);
-      this._tempConnections.delete(identifier);
-
-      // Remove from cache
-      await this._cache.remove(identifier, CacheNamespace.Connections);
-
-      // Deregister from router
-      await this._router.deregisterConnection(tenantId, stationId);
-
-      this._logger.debug(`Connection ${identifier} cleaned up successfully`);
-    } catch (error) {
-      this._logger.error(`Failed to cleanup connection ${identifier}:`, error);
-    }
-  }
-
-  /**
-   * Check if an error is critical and may require server restart
-   *
-   * @param {Error} error - The error to check
-   * @return {boolean} True if error is critical
-   */
-  private _isCriticalError(error: Error): boolean {
-    const criticalMessages = ['EADDRINUSE', 'ECONNREFUSED', 'ENOTFOUND', 'ETIMEDOUT'];
-
-    return criticalMessages.some((msg) => error.message.includes(msg));
+  private _onClose(wss: WebSocketServer): void {
+    this._logger.debug('Websocket Server closed');
+    // TODO: Try to recover the Websocket server
   }
 
   /**

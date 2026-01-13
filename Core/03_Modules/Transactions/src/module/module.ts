@@ -557,7 +557,6 @@ export class TransactionsModule extends AbstractModule {
     );
 
     if (connectorId !== 0 && transactionId && meterValues.length > 0) {
-      // Normal case: transactionId is provided
       try {
         const meterValueEntities: MeterValue[] = [];
         for (const meterValue of meterValues) {
@@ -586,70 +585,13 @@ export class TransactionsModule extends AbstractModule {
       } catch (e) {
         this._logger.error(`Failed to process MeterValues for transaction ${transactionId}:`, e);
       }
-    } else if (connectorId !== 0 && !transactionId && meterValues.length > 0) {
-      // *** FIX: OCPP 1.6 chargers often omit transactionId in MeterValues - look up by connector ***
-      this._logger.info(
-        `MeterValues missing transactionId. Looking up active transaction: station=${stationId}, connector=${connectorId}`
-      );
-
-      try {
-        // Look up most recent active transaction for this connector
-        const activeTransaction = await Transaction.findOne({
-          where: {
-            stationId,
-            connectorId,
-            isActive: true,
-          },
-          order: [['createdAt', 'DESC']],
-        });
-
-        if (activeTransaction) {
-          // Use found transaction ID
-          const foundTransactionId = parseInt(activeTransaction.transactionId);
-          this._logger.info(
-            `Found active transaction ${foundTransactionId} for connector ${connectorId}. Processing meter values.`
-          );
-
-          // Build and save meter values (same logic as above)
-          const meterValueEntities: MeterValue[] = [];
-          for (const meterValue of meterValues) {
-            if (meterValue.sampledValue && meterValue.sampledValue.length > 0) {
-              meterValueEntities.push(
-                MeterValue.build({
-                  tenantId,
-                  ...meterValue,
-                  connectorId,
-                }),
-              );
-            }
-          }
-
-          if (meterValueEntities.length > 0) {
-            await this._transactionEventRepository.updateTransactionByMeterValues(
-              tenantId,
-              meterValueEntities,
-              stationId,
-              foundTransactionId,
-            );
-            this._logger.info(
-              `Successfully linked ${meterValueEntities.length} MeterValues to transaction ${foundTransactionId} via fallback lookup`
-            );
-          }
-        } else {
-          this._logger.warn(
-            `No active transaction found for connector ${connectorId}. Cannot link meter values.`
-          );
-        }
-      } catch (e) {
-        this._logger.error(`Failed to process MeterValues with fallback lookup:`, e);
-      }
     } else {
       // Log why MeterValues were skipped
       if (connectorId === 0) {
         this._logger.warn(`Skipping MeterValues for connector 0 (station-level)`);
       } else if (!transactionId) {
         this._logger.warn(
-          `Skipping MeterValues: no active transaction found and no transactionId provided (station=${stationId}, connector=${connectorId})`
+          `Skipping MeterValues: missing transactionId (station=${stationId}, connector=${connectorId})`
         );
       } else if (meterValues.length === 0) {
         this._logger.warn(`Skipping MeterValues: empty meterValues array`);
@@ -719,36 +661,6 @@ export class TransactionsModule extends AbstractModule {
     const stationId = message.context.stationId;
     const request = message.payload;
 
-    // *** FIX: Look up transaction FIRST before processing authorization or building response ***
-    const transaction = await Transaction.findOne({
-      where: {
-        stationId,
-        transactionId: request.transactionId.toString(),
-      },
-      include: [StartTransaction],
-    });
-
-    if (!transaction) {
-      // Transaction not found - send error response per OCPP 1.6 spec section 4.10
-      this._logger.error(
-        `Transaction ${request.transactionId} not found for station ${stationId}. Sending error response.`,
-      );
-
-      const errorResponse: OCPP1_6.StopTransactionResponse = {
-        ...(request.idTag
-          ? {
-              idTagInfo: {
-                status: 'Invalid' as OCPP1_6.StopTransactionResponseStatus,
-              },
-            }
-          : {}),
-      };
-
-      await this.sendCallResultWithMessage(message, errorResponse);
-      return; // Exit early, but response was sent
-    }
-
-    // Transaction exists, proceed with normal processing
     const authorization: Authorization | undefined = request.idTag
       ? await this._authorizeRepository.readOnlyOneByQuerystring(tenantId, {
           idToken: request.idTag,
@@ -782,7 +694,33 @@ export class TransactionsModule extends AbstractModule {
       }
     }
 
-    // *** FIX: Store stop transaction data BEFORE sending response ***
+    const stopTransactionResponse: OCPP1_6.StopTransactionResponse = {
+      ...(request.idTag
+        ? {
+            idTagInfo: {
+              expiryDate: authorization?.cacheExpiryDateTime,
+              parentIdTag,
+              status: idTokenInfoStatus as unknown as OCPP1_6.StopTransactionResponseStatus,
+            },
+          }
+        : {}),
+    };
+
+    await this.sendCallResultWithMessage(message, stopTransactionResponse);
+
+    const transaction = await Transaction.findOne({
+      where: {
+        stationId,
+        transactionId: request.transactionId.toString(),
+      },
+      include: [StartTransaction],
+    });
+
+    if (!transaction) {
+      this._logger.error(`Transaction ${request.transactionId} not found.`);
+      return;
+    }
+
     const stopTransaction = await this._transactionEventRepository.createStopTransaction(
       tenantId,
       transaction.id,
@@ -804,7 +742,7 @@ export class TransactionsModule extends AbstractModule {
       transaction.totalKwh = (request.meterStop - transaction.startTransaction.meterStart) / 1000; // Convert from Wh to kWh
     } else {
       this._logger.warn(
-        `StartTransaction record not found at station ${stationId} for transactionId ${request.transactionId}.
+        `StartTransaction record not found at station ${stationId} for transactionId ${request.transactionId}. 
         Cannot calculate totalKwh.`,
       );
     }
@@ -812,24 +750,5 @@ export class TransactionsModule extends AbstractModule {
     transaction.stoppedReason = request.reason;
     transaction.endTime = request.timestamp;
     await transaction.save();
-
-    // *** FIX: Build and send response AFTER all database operations complete ***
-    const stopTransactionResponse: OCPP1_6.StopTransactionResponse = {
-      ...(request.idTag
-        ? {
-            idTagInfo: {
-              expiryDate: authorization?.cacheExpiryDateTime,
-              parentIdTag,
-              status: idTokenInfoStatus as unknown as OCPP1_6.StopTransactionResponseStatus,
-            },
-          }
-        : {}),
-    };
-
-    await this.sendCallResultWithMessage(message, stopTransactionResponse);
-    this._logger.info(
-      `StopTransaction completed successfully for transaction ${request.transactionId}: ` +
-        `totalKwh=${transaction.totalKwh}, endTime=${transaction.endTime}`,
-    );
   }
 }
