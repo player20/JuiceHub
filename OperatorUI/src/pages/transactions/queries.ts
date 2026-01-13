@@ -25,8 +25,14 @@ export const TRANSACTION_LIST_QUERY = gql`
       stoppedReason
       transactionId
       evseId
+      connectorId
       remoteStartId
       totalKwh
+      totalCost
+      startTime
+      endTime
+      meterStart
+      meterStop
       createdAt
       updatedAt
       location: Location {
@@ -109,8 +115,14 @@ export const TRANSACTION_GET_QUERY = gql`
       stoppedReason
       transactionId
       evseId
+      connectorId
       remoteStartId
       totalKwh
+      totalCost
+      startTime
+      endTime
+      meterStart
+      meterStop
       createdAt
       updatedAt
       location: Location {
