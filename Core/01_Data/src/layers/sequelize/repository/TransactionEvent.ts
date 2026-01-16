@@ -683,23 +683,49 @@ export class SequelizeTransactionEventRepository
       });
 
       // Associate Connector with StartTransaction
-      // Auto-create EVSE if it doesn't exist (for OCPP 1.6 compatibility)
+      // Use the same pattern as StatusNotificationService for OCPP 1.6 compatibility
+
+      // Step 1: Get or create EVSE using evseId (string), not evseTypeId (integer)
       this.logger.info(
-        `[createTransaction] Looking up/creating EVSE for station ${stationId}`,
+        `[createTransaction] Looking up EVSE for station ${stationId}, connector ${request.connectorId}`,
       );
-      const [evse] = await this.evse.readOrCreateByQuery(tenantId, {
+
+      let evse = await this.evse.readOnlyOneByQuery(tenantId, {
         where: {
           tenantId,
           stationId,
-          evseTypeId: 1, // Default EVSE ID 1 for OCPP 1.6 stations
+          evseId: request.connectorId.toString(), // Use connectorId as evseId for OCPP 1.6
         },
         transaction: sequelizeTransaction,
       });
 
-      // Auto-create Connector if it doesn't exist
+      if (!evse) {
+        this.logger.info(
+          `[createTransaction] EVSE not found, creating new EVSE for connector ${request.connectorId}`,
+        );
+        const [createdEvse] = await this.evse.readOrCreateByQuery(tenantId, {
+          where: {
+            tenantId,
+            stationId,
+            evseId: request.connectorId.toString(),
+          },
+          defaults: {
+            evseTypeId: request.connectorId, // Also set evseTypeId for OCPP 2.0.1 compat
+          },
+          transaction: sequelizeTransaction,
+        });
+        evse = createdEvse;
+      } else {
+        this.logger.info(
+          `[createTransaction] Found existing EVSE ${evse.id} for connector ${request.connectorId}`,
+        );
+      }
+
+      // Step 2: Get or create Connector
       this.logger.info(
-        `[createTransaction] Looking up/creating connector: connectorId=${request.connectorId}, stationId=${stationId}`,
+        `[createTransaction] Looking up/creating connector: connectorId=${request.connectorId}, evseId=${evse.id}`,
       );
+
       const [connector, connectorCreated] = await this.connector.readOrCreateByQuery(
         tenantId,
         {
@@ -709,8 +735,8 @@ export class SequelizeTransactionEventRepository
             connectorId: request.connectorId,
           },
           defaults: {
-            evseId: evse.id,
-            evseTypeConnectorId: request.connectorId, // For OCPP 1.6, same as connectorId
+            evseId: evse.id, // Use database EVSE ID
+            evseTypeConnectorId: request.connectorId,
             status: 'Available',
             timestamp: new Date().toISOString(),
           },
@@ -721,11 +747,11 @@ export class SequelizeTransactionEventRepository
 
       if (connectorCreated) {
         this.logger.info(
-          `[createTransaction] AUTO-CREATED connector ${connector.id} (OCPP connectorId ${request.connectorId}) for station ${stationId}`,
+          `[createTransaction] AUTO-CREATED connector ${connector.id} (OCPP connectorId ${request.connectorId})`,
         );
       } else {
         this.logger.info(
-          `[createTransaction] Found existing connector ${connector.id} (OCPP connectorId ${request.connectorId})`,
+          `[createTransaction] Found existing connector ${connector.id}`,
         );
       }
 
