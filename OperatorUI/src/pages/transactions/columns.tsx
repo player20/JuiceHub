@@ -92,7 +92,7 @@ export const getTransactionColumns = (
         key="chargingStation"
         dataIndex="chargingStation"
         title="Station ID"
-        sorter={true}
+        sorter={false}
         onCell={(record: ITransactionDto) => ({
           className: `column-${ChargingStationDtoProps.id}`,
           onClick: (e: React.MouseEvent) => {
@@ -113,7 +113,7 @@ export const getTransactionColumns = (
         key="location"
         dataIndex="location"
         title="Location Name"
-        sorter={true}
+        sorter={false}
         onCell={(record: ITransactionDto) => ({
           className: `column-${LocationDtoProps.name}`,
           onClick: (e: React.MouseEvent) => {
