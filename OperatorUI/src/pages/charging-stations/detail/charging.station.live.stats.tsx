@@ -321,7 +321,17 @@ export const ChargingStationLiveStats: FC<ConnectorStatsProps> = ({ stationId })
               <>
                 <Divider />
                 <Row gutter={16}>
-                  <Col xs={24} sm={12}>
+                  <Col xs={24} sm={8}>
+                    <Card size="small" style={{ background: '#fff7e6' }}>
+                      <Statistic
+                        title="Estimated Range Added"
+                        value={(sessionEnergyKwh * 3.5).toFixed(1)}
+                        suffix="miles"
+                        valueStyle={{ color: '#fa8c16' }}
+                      />
+                    </Card>
+                  </Col>
+                  <Col xs={24} sm={8}>
                     <Card size="small" style={{ background: '#f0f5ff' }}>
                       <Statistic
                         title="Estimated Cost (@ $0.30/kWh)"
@@ -331,7 +341,7 @@ export const ChargingStationLiveStats: FC<ConnectorStatsProps> = ({ stationId })
                       />
                     </Card>
                   </Col>
-                  <Col xs={24} sm={12}>
+                  <Col xs={24} sm={8}>
                     <Card size="small" style={{ background: '#f6ffed' }}>
                       <Statistic
                         title="CO₂ Avoided (vs. 25 mpg Gas Car)"
