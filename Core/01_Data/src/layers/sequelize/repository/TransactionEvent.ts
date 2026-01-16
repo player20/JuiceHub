@@ -693,7 +693,7 @@ export class SequelizeTransactionEventRepository
           stationId,
           evseTypeId: 1, // Default EVSE ID 1 for OCPP 1.6 stations
         },
-        sequelizeTransaction,
+        transaction: sequelizeTransaction,
       });
 
       // Auto-create Connector if it doesn't exist
@@ -715,7 +715,7 @@ export class SequelizeTransactionEventRepository
             timestamp: new Date().toISOString(),
           },
           include: [Tariff],
-          sequelizeTransaction,
+          transaction: sequelizeTransaction,
         },
       );
 
