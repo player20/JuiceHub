@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { Flex, Typography, Badge, Tag, Divider, Statistic, Row, Col } from 'antd';
+import { Flex, Typography, Badge, Tag, Divider, Statistic, Row, Col, Card } from 'antd';
 import {
   ClockCircleOutlined,
   ThunderboltOutlined,
@@ -11,6 +11,7 @@ import {
   CheckCircleOutlined,
   CloseCircleOutlined,
   InfoCircleOutlined,
+  CarOutlined,
 } from '@ant-design/icons';
 import { ArrowLeftIcon } from '../../../components/icons/arrow.left.icon';
 import { MenuSection } from '../../../components/main-menu/main.menu';
@@ -298,6 +299,53 @@ export const TransactionDetailCard = ({
           </Flex>
         </Col>
       </Row>
+
+      {/* Session Summary / Receipt */}
+      {transaction.totalKwh != null && transaction.totalKwh > 0 && (
+        <>
+          <Divider style={{ margin: 0 }} />
+          <Text type="secondary">Session Summary</Text>
+          <Row gutter={16}>
+            <Col xs={24} sm={8}>
+              <Card size="small" style={{ background: '#fff7e6' }}>
+                <Statistic
+                  title="Estimated Range Added"
+                  value={(transaction.totalKwh * 3.5).toFixed(1)}
+                  suffix="miles"
+                  prefix={<CarOutlined />}
+                  valueStyle={{ color: '#fa8c16' }}
+                />
+              </Card>
+            </Col>
+            <Col xs={24} sm={8}>
+              <Card size="small" style={{ background: '#f0f5ff' }}>
+                <Statistic
+                  title="Estimated Cost (@ $0.30/kWh)"
+                  value={(transaction.totalKwh * 0.30).toFixed(2)}
+                  prefix={<DollarOutlined />}
+                  precision={2}
+                />
+              </Card>
+            </Col>
+            <Col xs={24} sm={8}>
+              <Card size="small" style={{ background: '#f6ffed' }}>
+                <Statistic
+                  title="CO₂ Avoided (vs. 25 mpg Gas Car)"
+                  value={(() => {
+                    const milesPerKwh = 3.5;
+                    const milesDriven = transaction.totalKwh! * milesPerKwh;
+                    const gasolineEmissions = (milesDriven / 25) * 8.89;
+                    const evEmissions = transaction.totalKwh! * 0.5;
+                    return (gasolineEmissions - evEmissions).toFixed(2);
+                  })()}
+                  suffix="kg"
+                  valueStyle={{ color: '#52c41a' }}
+                />
+              </Card>
+            </Col>
+          </Row>
+        </>
+      )}
     </Flex>
   );
 };
