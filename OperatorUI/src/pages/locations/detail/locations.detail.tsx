@@ -18,17 +18,24 @@ import { ILocationDto } from '@citrineos/base';
 export const LocationsDetail = () => {
   const { id } = useParams<{ id: string }>();
 
+  // Validate ID before querying
+  const isValidId = id && id !== 'undefined' && !isNaN(Number(id));
+
   const { data, isLoading } = useOne<ILocationDto>({
     resource: ResourceType.LOCATIONS,
-    id,
+    id: isValidId ? id : undefined,
     meta: {
       gqlQuery: LOCATIONS_GET_QUERY,
     },
-    queryOptions: getPlainToInstanceOptions(LocationDto, true),
+    queryOptions: {
+      ...getPlainToInstanceOptions(LocationDto, true),
+      enabled: isValidId,
+    },
   });
 
   const location = data?.data;
 
+  if (!isValidId) return <p>Invalid location ID</p>;
   if (isLoading) return <p>Loading...</p>;
   if (!location) return <p>No Data Found</p>;
 

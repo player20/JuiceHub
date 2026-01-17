@@ -96,17 +96,19 @@ export const getTransactionColumns = (
         onCell={(record: ITransactionDto) => ({
           className: `column-${ChargingStationDtoProps.id}`,
           onClick: (e: React.MouseEvent) => {
-            const path = `/${MenuSection.CHARGING_STATIONS}/${record.chargingStation?.id}`;
+            const stationId = record.chargingStation?.id;
+            if (!stationId) return; // Don't navigate if no station
+            const path = `/${MenuSection.CHARGING_STATIONS}/${stationId}`;
             if (e.ctrlKey || e.metaKey) {
               window.open(path, '_blank');
             } else {
               push(path);
             }
           },
-          style: { cursor: 'pointer' },
+          style: { cursor: record.chargingStation?.id ? 'pointer' : 'default' },
         })}
         render={(_: any, record: ITransactionDto) => (
-          <h4>{record.chargingStation?.id}</h4>
+          <h4>{record.chargingStation?.id || record.stationId}</h4>
         )}
       />
       <Table.Column
@@ -117,17 +119,19 @@ export const getTransactionColumns = (
         onCell={(record: ITransactionDto) => ({
           className: `column-${LocationDtoProps.name}`,
           onClick: (e: React.MouseEvent) => {
-            const path = `/${MenuSection.LOCATIONS}/${record.chargingStation?.location?.id}`;
+            const locationId = record.chargingStation?.location?.id;
+            if (!locationId) return; // Don't navigate if no location
+            const path = `/${MenuSection.LOCATIONS}/${locationId}`;
             if (e.ctrlKey || e.metaKey) {
               window.open(path, '_blank');
             } else {
               push(path);
             }
           },
-          style: { cursor: 'pointer' },
+          style: { cursor: record.chargingStation?.location?.id ? 'pointer' : 'default' },
         })}
         render={(_: any, record: ITransactionDto) => (
-          <h4>{record.chargingStation?.location?.name}</h4>
+          <h4>{record.chargingStation?.location?.name || '-'}</h4>
         )}
       />
       <Table.Column
